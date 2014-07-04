@@ -1,0 +1,44 @@
+## ################################
+## PHP
+
+-main Main
+
+-cp src
+-cp lib/dotCore/src
+
+--no-traces
+
+--php-front index.php
+-php bin/php
+
+## ################################
+## JS
+
+--next
+
+-main Main
+
+-cp src
+-cp lib/dotCore/src
+
+--no-traces
+
+-js bin/js/Partitioning.js
+
+## ################################
+## AS3
+
+--next
+
+-main Main
+
+-cp src
+-cp lib/dotCore/src
+
+-debug
+--no-traces
+
+-D display
+
+-swf-version 11
+-swf bin/as3/Partitioning.swf

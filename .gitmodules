@@ -1,0 +1,3 @@
+[submodule "lib/dotCore"]
+	path = lib/dotCore
+	url = git@github.com:ScrambledRK/dotCore.git
