@@ -1,11 +1,7 @@
 (function () { "use strict";
-function $extend(from, fields) {
-	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
-	for (var name in fields) proto[name] = fields[name];
-	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
-	return proto;
-}
+var console = (1,eval)('this').console || {log:function(){}};
 var HxOverrides = function() { };
+HxOverrides.__name__ = true;
 HxOverrides.cca = function(s,index) {
 	var x = s.charCodeAt(index);
 	if(x != x) return undefined;
@@ -30,9 +26,13 @@ HxOverrides.remove = function(a,obj) {
 	return true;
 };
 var IPartitionCalculator = function() { };
+IPartitionCalculator.__name__ = true;
+var IPolygonConverter = function() { };
+IPolygonConverter.__name__ = true;
 var List = function() {
 	this.length = 0;
 };
+List.__name__ = true;
 List.prototype = {
 	add: function(item) {
 		var x = [item];
@@ -58,20 +58,27 @@ List.prototype = {
 		}
 		return false;
 	}
-	,iterator: function() {
-		return { h : this.h, hasNext : function() {
-			return this.h != null;
-		}, next : function() {
-			if(this.h == null) return null;
-			var x = this.h[0];
-			this.h = this.h[1];
-			return x;
-		}};
+};
+var _List = {};
+_List.ListIterator = function(head) {
+	this.head = head;
+	this.val = null;
+};
+_List.ListIterator.__name__ = true;
+_List.ListIterator.prototype = {
+	hasNext: function() {
+		return this.head != null;
+	}
+	,next: function() {
+		this.val = this.head[0];
+		this.head = this.head[1];
+		return this.val;
 	}
 };
 var Main = function() {
 	this.initialize();
 };
+Main.__name__ = true;
 Main.main = function() {
 	Main.instance = new Main();
 };
@@ -79,29 +86,24 @@ Main.prototype = {
 	initialize: function() {
 		this.calculator = new calculator.TraversalSplitter();
 	}
-	,calculate: function(inputString) {
-		var input = this.parseInput(inputString);
-		var result = this.calculator.calculate(input);
+	,calculate: function(input) {
+		var input1 = this.parseInput(input);
+		var result = this.calculator.calculate(input1);
 		return result;
 	}
 	,parseInput: function(input) {
-		var coordinates = new Array();
-		var splitted = input.split(" ");
-		var length = splitted.length * 0.5 | 0;
-		var _g = 0;
-		while(_g < length) {
-			var j = _g++;
-			var index = j * 2;
-			var x = Std.parseInt(splitted[index]);
-			var y = Std.parseInt(splitted[index + 1]);
-			coordinates.push(x);
-			coordinates.push(y);
-		}
-		if(coordinates.length == 0) throw "input issue";
-		return coordinates;
+		var output = null;
+		if(typeof(input) == "string") output = new converter.StringConverter().convert(input);
+		if(output == null) throw "unable to convert given input " + Std.string(input);
+		return output;
 	}
 };
+Math.__name__ = true;
 var Std = function() { };
+Std.__name__ = true;
+Std.string = function(s) {
+	return js.Boot.__string_rec(s,"");
+};
 Std.parseInt = function(x) {
 	var v = parseInt(x,10);
 	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) v = parseInt(x);
@@ -112,6 +114,7 @@ var at = {};
 at.dotpoint = {};
 at.dotpoint.math = {};
 at.dotpoint.math.MathUtil = function() { };
+at.dotpoint.math.MathUtil.__name__ = true;
 at.dotpoint.math.MathUtil.isEqual = function(a,b) {
 	if(a > b) return a - b < 1e-08; else return b - a < 1e-08;
 };
@@ -129,88 +132,89 @@ at.dotpoint.math.geom.Rectangle = function(x,y,w,h) {
 	this.position = new at.dotpoint.math.vector.Vector2(x,y);
 	this.size = new at.dotpoint.math.vector.Vector2(w,h);
 };
+at.dotpoint.math.geom.Rectangle.__name__ = true;
 at.dotpoint.math.geom.Rectangle.prototype = {
 	clone: function() {
-		return new at.dotpoint.math.geom.Rectangle(this.position.x,this.position.y,this.size.x,this.size.y);
+		return new at.dotpoint.math.geom.Rectangle(this.position.get_x(),this.position.get_y(),this.size.get_x(),this.size.get_y());
 	}
 	,setZero: function() {
-		this.position.x = 0;
-		this.position.y = 0;
-		this.size.x = 0;
-		this.size.y = 0;
+		this.position.set_x(0);
+		this.position.set_y(0);
+		this.size.set_x(0);
+		this.size.set_y(0);
 	}
 	,get_x: function() {
-		return this.position.x;
+		return this.position.get_x();
 	}
 	,set_x: function(value) {
-		return this.position.x = value;
+		return this.position.set_x(value);
 	}
 	,get_y: function() {
-		return this.position.y;
+		return this.position.get_y();
 	}
 	,set_y: function(value) {
-		return this.position.y = value;
+		return this.position.set_y(value);
 	}
 	,get_width: function() {
-		return this.size.x;
+		return this.size.get_x();
 	}
 	,set_width: function(value) {
 		if(value < 0) throw "dimension below zero";
-		return this.size.x = value;
+		return this.size.set_x(value);
 	}
 	,get_height: function() {
-		return this.size.y;
+		return this.size.get_y();
 	}
 	,set_height: function(value) {
 		if(value < 0) throw "dimension below zero";
-		return this.size.y = value;
+		return this.size.set_y(value);
 	}
 	,get_top: function() {
-		return this.position.y;
+		return this.position.get_y();
 	}
 	,set_top: function(value) {
 		var _g = this;
-		_g.set_height(_g.size.y - (value - this.position.y));
-		this.position.y = value;
+		_g.set_height(_g.size.get_y() - (value - this.position.get_y()));
+		this.position.set_y(value);
 		return value;
 	}
 	,get_bottom: function() {
-		return this.position.y + this.size.y;
+		return this.position.get_y() + this.size.get_y();
 	}
 	,set_bottom: function(value) {
-		this.set_height(value - this.position.y);
+		this.set_height(value - this.position.get_y());
 		return value;
 	}
 	,get_left: function() {
-		return this.position.x;
+		return this.position.get_x();
 	}
 	,set_left: function(value) {
 		var _g = this;
-		_g.set_width(_g.size.x - (value - this.position.x));
-		this.position.x = value;
+		_g.set_width(_g.size.get_x() - (value - this.position.get_x()));
+		this.position.set_x(value);
 		return value;
 	}
 	,get_right: function() {
-		return this.position.x + this.size.x;
+		return this.position.get_x() + this.size.get_x();
 	}
 	,set_right: function(value) {
-		this.set_width(value - this.position.x);
+		this.set_width(value - this.position.get_x());
 		return value;
 	}
 	,get_topLeft: function() {
 		return this.position.clone();
 	}
 	,set_topLeft: function(value) {
-		this.set_top(value.y);
-		this.set_left(value.x);
+		this.set_top(value.get_y());
+		this.set_left(value.get_x());
 		return value;
 	}
 	,get_bottomRight: function() {
 		return at.dotpoint.math.vector.Vector2.add(this.position,this.size);
 	}
 	,set_bottomRight: function(value) {
-		this.set_bottom(value.y);
-		this.set_right(value.x);
+		this.set_bottom(value.get_y());
+		this.set_right(value.get_x());
 		return value;
 	}
 	,get_dimension: function() {
@@ -221,26 +225,31 @@ at.dotpoint.math.geom.Rectangle.prototype = {
 		return value;
 	}
 	,isInside: function(x,y) {
-		if(x < this.position.x) return false;
-		if(y < this.position.y) return false;
-		if(x > this.position.x + this.size.x) return false;
-		if(y > this.position.y + this.size.y) return false;
+		if(x < this.position.get_x()) return false;
+		if(y < this.position.get_y()) return false;
+		if(x > this.position.get_x() + this.size.get_x()) return false;
+		if(y > this.position.get_y() + this.size.get_y()) return false;
 		return true;
 	}
 	,toString: function() {
-		return "x:" + this.position.x + " y:" + this.position.y + " w:" + this.size.x + " h:" + this.size.y;
+		return "x:" + this.position.get_x() + " y:" + this.position.get_y() + " w:" + this.size.get_x() + " h:" + this.size.get_y();
 	}
 };
 at.dotpoint.math.vector = {};
 at.dotpoint.math.vector.IMatrix33 = function() { };
+at.dotpoint.math.vector.IMatrix33.__name__ = true;
 at.dotpoint.math.vector.IMatrix44 = function() { };
+at.dotpoint.math.vector.IMatrix44.__name__ = true;
 at.dotpoint.math.vector.IMatrix44.__interfaces__ = [at.dotpoint.math.vector.IMatrix33];
 at.dotpoint.math.vector.IVector2 = function() { };
+at.dotpoint.math.vector.IVector2.__name__ = true;
 at.dotpoint.math.vector.IVector3 = function() { };
+at.dotpoint.math.vector.IVector3.__name__ = true;
 at.dotpoint.math.vector.IVector3.__interfaces__ = [at.dotpoint.math.vector.IVector2];
 at.dotpoint.math.vector.Matrix44 = function(m) {
 	if(m != null) this.set44(m); else this.toIdentity();
 };
+at.dotpoint.math.vector.Matrix44.__name__ = true;
 at.dotpoint.math.vector.Matrix44.__interfaces__ = [at.dotpoint.math.vector.IMatrix44];
 at.dotpoint.math.vector.Matrix44.add = function(a,b,output) {
 	output.m11 = a.m11 + b.m11;
@@ -482,58 +491,73 @@ at.dotpoint.math.vector.Matrix44.prototype = {
 at.dotpoint.math.vector.Vector2 = function(x,y) {
 	if(y == null) y = 0;
 	if(x == null) x = 0;
-	this.x = x;
-	this.y = y;
+	this.set_x(x);
+	this.set_y(y);
 };
+at.dotpoint.math.vector.Vector2.__name__ = true;
 at.dotpoint.math.vector.Vector2.__interfaces__ = [at.dotpoint.math.vector.IVector2];
 at.dotpoint.math.vector.Vector2.add = function(a,b,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector2();
-	output.x = a.x + b.x;
-	output.y = a.y + b.y;
+	output.set_x(a.get_x() + b.get_x());
+	output.set_y(a.get_y() + b.get_y());
 	return output;
 };
 at.dotpoint.math.vector.Vector2.subtract = function(a,b,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector2();
-	output.x = a.x - b.x;
-	output.y = a.y - b.y;
+	output.set_x(a.get_x() - b.get_x());
+	output.set_y(a.get_y() - b.get_y());
 	return output;
 };
 at.dotpoint.math.vector.Vector2.scale = function(a,scalar,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector2();
-	output.x = a.x * scalar;
-	output.y = a.y * scalar;
+	output.set_x(a.get_x() * scalar);
+	output.set_y(a.get_y() * scalar);
 	return output;
 };
 at.dotpoint.math.vector.Vector2.isEqual = function(a,b) {
-	if(!at.dotpoint.math.MathUtil.isEqual(a.x,b.x)) return false;
-	if(!at.dotpoint.math.MathUtil.isEqual(a.y,b.y)) return false;
+	if(!at.dotpoint.math.MathUtil.isEqual(a.get_x(),b.get_x())) return false;
+	if(!at.dotpoint.math.MathUtil.isEqual(a.get_y(),b.get_y())) return false;
 	return true;
 };
 at.dotpoint.math.vector.Vector2.prototype = {
 	clone: function() {
-		return new at.dotpoint.math.vector.Vector2(this.x,this.y);
+		return new at.dotpoint.math.vector.Vector2(this.get_x(),this.get_y());
+	}
+	,get_x: function() {
+		return this.x;
+	}
+	,set_x: function(value) {
+		return this.x = value;
+	}
+	,get_y: function() {
+		return this.y;
+	}
+	,set_y: function(value) {
+		return this.y = value;
 	}
 	,set: function(x,y) {
-		this.x = x;
-		this.y = y;
+		this.set_x(x);
+		this.set_y(y);
 	}
 	,copyFrom: function(vector) {
-		this.x = vector.x;
-		this.y = vector.y;
+		this.set_x(vector.get_x());
+		this.set_y(vector.get_y());
 	}
 	,normalize: function() {
 		var k = 1. / this.length();
-		this.x *= k;
-		this.y *= k;
+		var _g = this;
+		_g.set_x(_g.get_x() * k);
+		var _g1 = this;
+		_g1.set_y(_g1.get_y() * k);
 	}
 	,length: function() {
 		return Math.sqrt(this.lengthSq());
 	}
 	,lengthSq: function() {
-		return this.x * this.x + this.y * this.y;
+		return this.get_x() * this.get_x() + this.get_y() * this.get_y();
 	}
 	,toString: function() {
-		return "[Vector2;" + this.x + ", " + this.y + "]";
+		return "[Vector2;" + this.get_x() + ", " + this.get_y() + "]";
 	}
 };
 at.dotpoint.math.vector.Vector3 = function(x,y,z,w) {
@@ -541,58 +565,59 @@ at.dotpoint.math.vector.Vector3 = function(x,y,z,w) {
 	if(z == null) z = 0;
 	if(y == null) y = 0;
 	if(x == null) x = 0;
-	this.x = x;
-	this.y = y;
+	this.set_x(x);
+	this.set_y(y);
 	this.z = z;
 	this.w = w;
 };
+at.dotpoint.math.vector.Vector3.__name__ = true;
 at.dotpoint.math.vector.Vector3.__interfaces__ = [at.dotpoint.math.vector.IVector3];
 at.dotpoint.math.vector.Vector3.add = function(a,b,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector3();
-	output.x = a.x + b.x;
-	output.y = a.y + b.y;
+	output.set_x(a.get_x() + b.get_x());
+	output.set_y(a.get_y() + b.get_y());
 	output.z = a.z + b.z;
 	return output;
 };
 at.dotpoint.math.vector.Vector3.subtract = function(a,b,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector3();
-	output.x = a.x - b.x;
-	output.y = a.y - b.y;
+	output.set_x(a.get_x() - b.get_x());
+	output.set_y(a.get_y() - b.get_y());
 	output.z = a.z - b.z;
 	return output;
 };
 at.dotpoint.math.vector.Vector3.scale = function(a,scalar,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector3();
-	output.x = a.x * scalar;
-	output.y = a.y * scalar;
+	output.set_x(a.get_x() * scalar);
+	output.set_y(a.get_y() * scalar);
 	output.z = a.z * scalar;
 	return output;
 };
 at.dotpoint.math.vector.Vector3.cross = function(a,b,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector3();
-	output.x = a.y * b.z - a.z * b.y;
-	output.y = a.z * b.x - a.x * b.z;
-	output.z = a.x * b.y - a.y * b.x;
+	output.set_x(a.get_y() * b.z - a.z * b.get_y());
+	output.set_y(a.z * b.get_x() - a.get_x() * b.z);
+	output.z = a.get_x() * b.get_y() - a.get_y() * b.get_x();
 	return output;
 };
 at.dotpoint.math.vector.Vector3.dot = function(a,b) {
-	return a.x * b.x + a.y * b.y + a.z * b.z;
+	return a.get_x() * b.get_x() + a.get_y() * b.get_y() + a.z * b.z;
 };
 at.dotpoint.math.vector.Vector3.multiplyMatrix = function(a,b,output) {
 	if(output == null) output = new at.dotpoint.math.vector.Vector3();
-	var x = a.x;
-	var y = a.y;
+	var x = a.get_x();
+	var y = a.get_y();
 	var z = a.z;
 	var w = a.w;
-	output.x = b.m11 * x + b.m12 * y + b.m13 * z + b.m14 * w;
-	output.y = b.m21 * x + b.m22 * y + b.m23 * z + b.m24 * w;
+	output.set_x(b.m11 * x + b.m12 * y + b.m13 * z + b.m14 * w);
+	output.set_y(b.m21 * x + b.m22 * y + b.m23 * z + b.m24 * w);
 	output.z = b.m31 * x + b.m32 * y + b.m33 * z + b.m34 * w;
 	output.w = b.m41 * x + b.m42 * y + b.m43 * z + b.m44 * w;
 	return output;
 };
 at.dotpoint.math.vector.Vector3.isEqual = function(a,b) {
-	if(!at.dotpoint.math.MathUtil.isEqual(a.x,b.x)) return false;
-	if(!at.dotpoint.math.MathUtil.isEqual(a.y,b.y)) return false;
+	if(!at.dotpoint.math.MathUtil.isEqual(a.get_x(),b.get_x())) return false;
+	if(!at.dotpoint.math.MathUtil.isEqual(a.get_y(),b.get_y())) return false;
 	if(!at.dotpoint.math.MathUtil.isEqual(a.z,b.z)) return false;
 	return true;
 };
@@ -621,27 +646,41 @@ at.dotpoint.math.vector.Vector3.orthoNormalize = function(vectors) {
 };
 at.dotpoint.math.vector.Vector3.prototype = {
 	clone: function() {
-		return new at.dotpoint.math.vector.Vector3(this.x,this.y,this.z,this.w);
+		return new at.dotpoint.math.vector.Vector3(this.get_x(),this.get_y(),this.z,this.w);
+	}
+	,get_x: function() {
+		return this.x;
+	}
+	,set_x: function(value) {
+		return this.x = value;
+	}
+	,get_y: function() {
+		return this.y;
+	}
+	,set_y: function(value) {
+		return this.y = value;
 	}
 	,normalize: function() {
 		var l = this.length();
 		if(l == 0) return;
 		var k = 1. / l;
-		this.x *= k;
-		this.y *= k;
+		var _g = this;
+		_g.set_x(_g.get_x() * k);
+		var _g1 = this;
+		_g1.set_y(_g1.get_y() * k);
 		this.z *= k;
 	}
 	,length: function() {
 		return Math.sqrt(this.lengthSq());
 	}
 	,lengthSq: function() {
-		return this.x * this.x + this.y * this.y + this.z * this.z;
+		return this.get_x() * this.get_x() + this.get_y() * this.get_y() + this.z * this.z;
 	}
 	,toArray: function(w) {
 		if(w == null) w = false;
-		var output = new Array();
-		output[0] = this.x;
-		output[1] = this.y;
+		var output = [];
+		output[0] = this.get_x();
+		output[1] = this.get_y();
 		output[2] = this.z;
 		if(w) output[3] = this.w;
 		return output;
@@ -649,9 +688,9 @@ at.dotpoint.math.vector.Vector3.prototype = {
 	,getIndex: function(index) {
 		switch(index) {
 		case 0:
-			return this.x;
+			return this.get_x();
 		case 1:
-			return this.y;
+			return this.get_y();
 		case 2:
 			return this.z;
 		case 3:
@@ -663,10 +702,10 @@ at.dotpoint.math.vector.Vector3.prototype = {
 	,setIndex: function(index,value) {
 		switch(index) {
 		case 0:
-			this.x = value;
+			this.set_x(value);
 			break;
 		case 1:
-			this.y = value;
+			this.set_y(value);
 			break;
 		case 2:
 			this.z = value;
@@ -679,28 +718,29 @@ at.dotpoint.math.vector.Vector3.prototype = {
 		}
 	}
 	,set: function(x,y,z,w) {
-		this.x = x;
-		this.y = y;
+		this.set_x(x);
+		this.set_y(y);
 		this.z = z;
 		if(w != null) this.w = w;
 	}
 	,toString: function() {
-		return "[Vector3;" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + "]";
+		return "[Vector3;" + this.get_x() + ", " + this.get_y() + ", " + this.z + ", " + this.w + "]";
 	}
 };
 var calculator = {};
 calculator.EdgeContainer = function() {
-	this.vertical = new Array();
-	this.horizontal = new Array();
+	this.vertical = [];
+	this.horizontal = [];
 };
+calculator.EdgeContainer.__name__ = true;
 calculator.EdgeContainer.prototype = {
 	insert: function(a,b) {
 		if(this.isVertical(a,b)) {
-			var index = this.getIndex(a.x,true);
+			var index = this.getIndex(a.get_x(),true);
 			this.vertical.splice(index * 2,0,a);
 			this.vertical.splice(index * 2,0,b);
 		} else {
-			var index1 = this.getIndex(a.y,false);
+			var index1 = this.getIndex(a.get_y(),false);
 			this.horizontal.splice(index1 * 2,0,a);
 			this.horizontal.splice(index1 * 2,0,b);
 		}
@@ -715,42 +755,42 @@ calculator.EdgeContainer.prototype = {
 		}
 	}
 	,split: function(start,dir) {
-		var isVertical = Math.abs(dir.x) < Math.abs(dir.y);
+		var isVertical = Math.abs(dir.get_x()) < Math.abs(dir.get_y());
 		if(isVertical) {
 			var ystep;
-			if(dir.y < 0) ystep = -1; else ystep = 1;
-			var hstart = this.getIndex(start.y,false) - 1;
+			if(dir.get_y() < 0) ystep = -1; else ystep = 1;
+			var hstart = this.getIndex(start.get_y(),false) - 1;
 			var hlength = this.horizontal.length >> 1;
 			while((hstart += ystep) >= 0 && hstart <= hlength) {
 				var hindex = hstart * 2;
 				var a = this.horizontal[hindex];
 				var b = this.horizontal[hindex + 1];
 				if(a == start || b == start) continue;
-				if(start.x >= a.x && start.x <= b.x || start.x >= b.x && start.x <= a.x) return this.insertSplit(start,a,b);
+				if(start.get_x() >= a.get_x() && start.get_x() <= b.get_x() || start.get_x() >= b.get_x() && start.get_x() <= a.get_x()) return this.insertSplit(start,a,b);
 			}
 		} else {
 			var xstep;
-			if(dir.x < 0) xstep = -1; else xstep = 1;
-			var vstart = this.getIndex(start.x,true) - 1;
+			if(dir.get_x() < 0) xstep = -1; else xstep = 1;
+			var vstart = this.getIndex(start.get_x(),true) - 1;
 			var vlength = this.vertical.length >> 1;
 			while((vstart += xstep) >= 0 && vstart <= vlength) {
 				var vindex = vstart * 2;
 				var a1 = this.vertical[vindex];
 				var b1 = this.vertical[vindex + 1];
 				if(a1 == start || b1 == start) continue;
-				if(start.y >= a1.y && start.y <= b1.y || start.y >= b1.y && start.y <= a1.y) return this.insertSplit(start,a1,b1);
+				if(start.get_y() >= a1.get_y() && start.get_y() <= b1.get_y() || start.get_y() >= b1.get_y() && start.get_y() <= a1.get_y()) return this.insertSplit(start,a1,b1);
 			}
 		}
 		return null;
 	}
 	,insertSplit: function(start,a,b) {
-		var split = new calculator.Vertex();
+		var split = new calculator.Vertex(null);
 		if(this.isVertical(a,b)) {
-			split.x = a.x;
-			split.y = start.y;
+			split.set_x(a.get_x());
+			split.set_y(start.get_y());
 		} else {
-			split.x = start.x;
-			split.y = a.y;
+			split.set_x(start.get_x());
+			split.set_y(a.get_y());
 		}
 		this.remove(a,b);
 		this.insert(split,start);
@@ -772,7 +812,7 @@ calculator.EdgeContainer.prototype = {
 			var _g = 0;
 			while(_g < vlength) {
 				var v = _g++;
-				if(this.vertical[v * 2].x > value) return v;
+				if(this.vertical[v * 2].get_x() > value) return v;
 			}
 			return vlength;
 		} else {
@@ -780,56 +820,55 @@ calculator.EdgeContainer.prototype = {
 			var _g1 = 0;
 			while(_g1 < hlength) {
 				var h = _g1++;
-				if(this.horizontal[h * 2].y > value) return h;
+				if(this.horizontal[h * 2].get_y() > value) return h;
 			}
 			return hlength;
 		}
 		return -1;
 	}
 	,isVertical: function(a,b) {
-		return at.dotpoint.math.MathUtil.isEqual(a.x,b.x);
+		return at.dotpoint.math.MathUtil.isEqual(a.get_x(),b.get_x());
 	}
 };
 calculator.TraversalSplitter = function() {
 };
+calculator.TraversalSplitter.__name__ = true;
 calculator.TraversalSplitter.__interfaces__ = [IPartitionCalculator];
 calculator.TraversalSplitter.prototype = {
 	calculate: function(input) {
+		this.coordinates = [];
+		this.edges = new calculator.EdgeContainer();
+		this.partitions = [];
 		this.prepareInput(input);
 		this.split();
-		this.partition();
-		return this.prepareOutput();
+		this.partitionate();
+		return this.partitions;
 	}
 	,prepareInput: function(input) {
-		this.coordinates = this.parseInput(input);
-		this.traverse();
+		this.toVertices(input);
+		this.sortClockwise();
 		this.buildGraph();
 	}
-	,parseInput: function(input) {
-		var coordinates = new Array();
-		var length = (input.length * 0.5 | 0) - 1;
+	,toVertices: function(input) {
 		var _g = 0;
-		while(_g < length) {
-			var j = _g++;
-			var index = j * 2;
-			var x = input[index];
-			var y = input[index + 1];
-			var vertex = new calculator.Vertex(x,y);
-			coordinates.push(vertex);
+		while(_g < input.length) {
+			var point = input[_g];
+			++_g;
+			this.coordinates.push(new calculator.Vertex(point));
 		}
-		return coordinates;
+		var first = this.coordinates[0];
+		var last = this.coordinates[this.coordinates.length - 1];
+		if(at.dotpoint.math.vector.Vector2.isEqual(first.coordinate,last.coordinate)) this.coordinates.pop();
 	}
-	,traverse: function() {
-		var clockwise = new Array();
-		var counterwise = new Array();
+	,sortClockwise: function() {
+		var clockwise = [];
+		var counterwise = [];
 		var _g1 = 0;
 		var _g = this.coordinates.length;
 		while(_g1 < _g) {
 			var v = _g1++;
-			var p1 = this.coordinates[v % this.coordinates.length];
-			var p2 = this.coordinates[(v + 1) % this.coordinates.length];
-			var p3 = this.coordinates[(v + 2) % this.coordinates.length];
-			if(this.isClockwise(p1,p2,p3)) clockwise.push(p2); else counterwise.push(p2);
+			var triangle = this.getTriangle(v,true);
+			if(triangle.isClockwise()) clockwise.push(triangle.p2); else counterwise.push(triangle.p2);
 		}
 		if(clockwise.length < counterwise.length) {
 			this.coordinates.reverse();
@@ -838,102 +877,78 @@ calculator.TraversalSplitter.prototype = {
 		} else this.splitters = counterwise;
 	}
 	,buildGraph: function() {
-		this.edges = new calculator.EdgeContainer();
 		var _g1 = 0;
 		var _g = this.coordinates.length;
 		while(_g1 < _g) {
 			var v = _g1++;
-			var p1 = this.coordinates[v % this.coordinates.length];
-			var p2 = this.coordinates[(v + 1) % this.coordinates.length];
-			var p3 = this.coordinates[(v + 2) % this.coordinates.length];
-			p2.neighbors.add(p1);
-			p2.neighbors.add(p3);
-			this.edges.insert(p1,p2);
+			var triangle = this.getTriangle(v,true);
+			triangle.p2.neighbors.add(triangle.p1);
+			triangle.p2.neighbors.add(triangle.p3);
+			this.edges.insert(triangle.p1,triangle.p2);
 		}
 		null;
 	}
 	,split: function() {
-		var _g1 = 0;
-		var _g = this.splitters.length;
-		while(_g1 < _g) {
-			var v = _g1++;
-			var current = this.splitters[v];
-			var previous = current.neighbors.first();
-			var normal = this.getNormal(current,previous);
-			var split = this.edges.split(current,normal);
-			if(split == null) throw "split could not be resolved";
+		var _g = 0;
+		var _g1 = this.splitters;
+		while(_g < _g1.length) {
+			var vertex = _g1[_g];
+			++_g;
+			var normal = this.getNormal(vertex);
+			var split = this.edges.split(vertex,normal);
+			if(split == null) throw "split could not be resolved, check the input";
 			this.coordinates.push(split);
 		}
 	}
-	,partition: function() {
-		this.partitions = new Array();
-		while(this.coordinates.length > 0) {
-			var start = this.coordinates.pop();
+	,partitionate: function() {
+		var _g = 0;
+		var _g1 = this.coordinates;
+		while(_g < _g1.length) {
+			var start = _g1[_g];
+			++_g;
 			var current = start;
 			var previous = null;
 			var next = null;
-			var partition = new at.dotpoint.math.geom.Rectangle();
+			var partition = null;
 			do {
-				next = this.selectCircleNode(current,previous);
-				if(next == null) {
-					partition = null;
-					break;
-				} else this.expandBounding(next,partition);
+				next = this.selectClockwiseVertex(current,previous);
+				if(next == null) break; else {
+					if(partition == null) partition = new at.dotpoint.math.geom.Rectangle();
+					this.expandBounding(next,partition);
+				}
 				previous = current;
 				current = next;
 			} while(current != start);
 			if(partition != null && this.isUniquePartiton(partition)) this.partitions.push(partition);
 		}
 	}
-	,selectCircleNode: function(current,previous) {
-		if(previous == null) previous = current;
-		var rotation = new Array();
-		rotation[0] = new at.dotpoint.math.vector.Vector2(1,0);
-		rotation[1] = new at.dotpoint.math.vector.Vector2(0,1);
-		rotation[2] = new at.dotpoint.math.vector.Vector2(-1,0);
-		rotation[3] = new at.dotpoint.math.vector.Vector2(0,-1);
-		var direction = this.getDirection(current,previous);
-		var rotationStart = -1;
-		var rotationOffset = 1;
-		var _g1 = 0;
-		var _g = rotation.length;
-		while(_g1 < _g) {
-			var r = _g1++;
-			if(at.dotpoint.math.vector.Vector2.isEqual(rotation[r],direction)) {
-				rotationStart = r;
-				break;
-			}
+	,selectClockwiseVertex: function(current,previous) {
+		var iterator = null;
+		var possible = null;
+		if(previous == null) {
+			iterator = new _List.ListIterator(current.neighbors.h);
+			previous = current.neighbors.first();
 		}
-		var _g11 = 0;
-		var _g2 = rotation.length;
-		while(_g11 < _g2) {
-			var r1 = _g11++;
-			var index = rotationStart + rotationOffset + r1;
-			if(index < 0) index = rotation.length - index;
-			var desired = rotation[index % rotation.length];
-			var $it0 = current.neighbors.iterator();
-			while( $it0.hasNext() ) {
-				var neighbor = $it0.next();
-				var direction1 = this.getDirection(neighbor,current);
-				if(at.dotpoint.math.vector.Vector2.isEqual(direction1,desired) && neighbor != previous) return neighbor;
+		while(previous != null) {
+			var _g_head = current.neighbors.h;
+			var _g_val = null;
+			while(_g_head != null) {
+				var neighbor;
+				_g_val = _g_head[0];
+				_g_head = _g_head[1];
+				neighbor = _g_val;
+				if(neighbor == previous) continue;
+				var triangle = calculator.VertexTriangle.instance;
+				triangle.p1 = previous;
+				triangle.p2 = current;
+				triangle.p3 = neighbor;
+				if(triangle.isClockwise()) return neighbor; else if(triangle.isClockwise(true)) possible = neighbor;
 			}
-			rotationOffset = -1;
+			if(possible != null) return possible;
+			if(iterator == null || !iterator.hasNext()) break;
+			previous = iterator.next();
 		}
 		return null;
-	}
-	,prepareOutput: function() {
-		var output = new Array();
-		var _g = 0;
-		var _g1 = this.partitions;
-		while(_g < _g1.length) {
-			var area = _g1[_g];
-			++_g;
-			output.push(area.position.x | 0);
-			output.push(area.position.y | 0);
-			output.push(area.size.x | 0);
-			output.push(area.size.y | 0);
-		}
-		return output;
 	}
 	,isUniquePartiton: function(partition) {
 		var _g = 0;
@@ -946,76 +961,190 @@ calculator.TraversalSplitter.prototype = {
 		}
 		return true;
 	}
-	,getNormal: function(current,previous) {
+	,getTriangle: function(index,pool) {
+		if(pool == null) pool = false;
+		var p1 = this.coordinates[index % this.coordinates.length];
+		var p2 = this.coordinates[(index + 1) % this.coordinates.length];
+		var p3 = this.coordinates[(index + 2) % this.coordinates.length];
+		var triangle;
+		if(pool) triangle = calculator.VertexTriangle.instance; else triangle = new calculator.VertexTriangle();
+		triangle.p1 = p1;
+		triangle.p2 = p2;
+		triangle.p3 = p3;
+		return triangle;
+	}
+	,getNormal: function(current) {
+		var previous = current.neighbors.first();
 		var delta = new at.dotpoint.math.vector.Vector3();
-		delta.x = current.x - previous.x;
-		delta.y = current.y - previous.y;
+		delta.set_x(current.get_x() - previous.get_x());
+		delta.set_y(current.get_y() - previous.get_y());
 		var normal = at.dotpoint.math.vector.Vector3.cross(delta,new at.dotpoint.math.vector.Vector3(0,0,-1));
 		normal.normalize();
-		return new at.dotpoint.math.vector.Vector2(normal.x,normal.y);
-	}
-	,getDirection: function(current,previous) {
-		var direction = at.dotpoint.math.vector.Vector2.subtract(current,previous);
-		direction.normalize();
-		direction.x = Math.round(direction.x);
-		direction.y = Math.round(direction.y);
-		return direction;
-	}
-	,isClockwise: function(a,b,c) {
-		var p1 = new at.dotpoint.math.vector.Vector3(a.x,a.y,0);
-		var p2 = new at.dotpoint.math.vector.Vector3(b.x,b.y,0);
-		var p3 = new at.dotpoint.math.vector.Vector3(c.x,c.y,0);
-		var sub1 = at.dotpoint.math.vector.Vector3.subtract(p2,p1,new at.dotpoint.math.vector.Vector3());
-		var sub2 = at.dotpoint.math.vector.Vector3.subtract(p3,p1,new at.dotpoint.math.vector.Vector3());
-		return at.dotpoint.math.vector.Vector3.cross(sub1,sub2).z > 0;
+		return new at.dotpoint.math.vector.Vector2(normal.get_x(),normal.get_y());
 	}
 	,expandBounding: function(vertex,bounding) {
-		var v = bounding.size.x == 0 && bounding.size.y == 0 && bounding.position.x == 0 && bounding.position.y == 0;
-		var x = vertex.x;
-		var y = vertex.y;
+		var v = bounding.size.get_x() == 0 && bounding.size.get_y() == 0 && bounding.position.get_x() == 0 && bounding.position.get_y() == 0;
+		var x = vertex.get_x();
+		var y = vertex.get_y();
 		var nl;
-		if(v) nl = x; else nl = Math.min(bounding.position.x,x);
+		if(v) nl = x; else nl = Math.min(bounding.position.get_x(),x);
 		var nr;
-		if(v) nr = x; else nr = Math.max(bounding.position.x + bounding.size.x,x);
+		if(v) nr = x; else nr = Math.max(bounding.position.get_x() + bounding.size.get_x(),x);
 		var nt;
-		if(v) nt = y; else nt = Math.min(bounding.position.y,y);
+		if(v) nt = y; else nt = Math.min(bounding.position.get_y(),y);
 		var nb;
-		if(v) nb = y; else nb = Math.max(bounding.position.y + bounding.size.y,y);
-		if(nl != bounding.position.x || nr != bounding.position.x + bounding.size.x || nt != bounding.position.y || nb != bounding.position.y + bounding.size.y) {
-			bounding.set_width(nr - bounding.position.x);
+		if(v) nb = y; else nb = Math.max(bounding.position.get_y() + bounding.size.get_y(),y);
+		if(nl != bounding.position.get_x() || nr != bounding.position.get_x() + bounding.size.get_x() || nt != bounding.position.get_y() || nb != bounding.position.get_y() + bounding.size.get_y()) {
+			bounding.set_width(nr - bounding.position.get_x());
 			nr;
 			bounding.set_left(nl);
-			bounding.set_height(nb - bounding.position.y);
+			bounding.set_height(nb - bounding.position.get_y());
 			nb;
 			bounding.set_top(nt);
 		}
 	}
 };
-calculator.Vertex = function(x,y) {
-	if(y == null) y = 0;
-	if(x == null) x = 0;
-	at.dotpoint.math.vector.Vector2.call(this,x,y);
+calculator.Vertex = function(coordinate) {
+	if(coordinate == null) coordinate = new at.dotpoint.math.vector.Vector2();
+	this.coordinate = coordinate;
 	this.neighbors = new List();
 };
-calculator.Vertex.__super__ = at.dotpoint.math.vector.Vector2;
-calculator.Vertex.prototype = $extend(at.dotpoint.math.vector.Vector2.prototype,{
-});
+calculator.Vertex.__name__ = true;
+calculator.Vertex.__interfaces__ = [at.dotpoint.math.vector.IVector2];
+calculator.Vertex.prototype = {
+	get_x: function() {
+		return this.coordinate.get_x();
+	}
+	,set_x: function(value) {
+		return this.coordinate.set_x(value);
+	}
+	,get_y: function() {
+		return this.coordinate.get_y();
+	}
+	,set_y: function(value) {
+		return this.coordinate.set_y(value);
+	}
+};
+calculator.VertexTriangle = function() {
+};
+calculator.VertexTriangle.__name__ = true;
+calculator.VertexTriangle.prototype = {
+	isClockwise: function(includeZero) {
+		if(includeZero == null) includeZero = false;
+		if(this.p1 == null || this.p2 == null || this.p3 == null) throw "must set 3 vertex coordinates";
+		var v1 = new at.dotpoint.math.vector.Vector3(this.p1.coordinate.get_x(),this.p1.coordinate.get_y(),0);
+		var v2 = new at.dotpoint.math.vector.Vector3(this.p2.coordinate.get_x(),this.p2.coordinate.get_y(),0);
+		var v3 = new at.dotpoint.math.vector.Vector3(this.p3.coordinate.get_x(),this.p3.coordinate.get_y(),0);
+		var sub1 = at.dotpoint.math.vector.Vector3.subtract(v2,v1,new at.dotpoint.math.vector.Vector3());
+		var sub2 = at.dotpoint.math.vector.Vector3.subtract(v3,v1,new at.dotpoint.math.vector.Vector3());
+		if(includeZero) return at.dotpoint.math.vector.Vector3.cross(sub1,sub2).z >= 0; else return at.dotpoint.math.vector.Vector3.cross(sub1,sub2).z > 0;
+	}
+};
+var converter = {};
+converter.StringConverter = function(seperator) {
+	if(seperator == null) seperator = " ";
+	this.seperator = seperator;
+};
+converter.StringConverter.__name__ = true;
+converter.StringConverter.__interfaces__ = [IPolygonConverter];
+converter.StringConverter.prototype = {
+	convert: function(input) {
+		var coordinates = [];
+		var splitted = input.split(this.seperator);
+		var length = splitted.length * 0.5 | 0;
+		var _g = 0;
+		while(_g < length) {
+			var j = _g++;
+			var index = j * 2;
+			var point = new at.dotpoint.math.vector.Vector2();
+			point.set_x(Std.parseInt(splitted[index]));
+			point.set_y(Std.parseInt(splitted[index + 1]));
+			coordinates.push(point);
+		}
+		if(coordinates.length == 0) throw "input string does not contain parsable float or integer coordinates or does not use " + this.seperator + " as seperator";
+		return coordinates;
+	}
+};
+var js = {};
+js.Boot = function() { };
+js.Boot.__name__ = true;
+js.Boot.__string_rec = function(o,s) {
+	if(o == null) return "null";
+	if(s.length >= 5) return "<...>";
+	var t = typeof(o);
+	if(t == "function" && (o.__name__ || o.__ename__)) t = "object";
+	switch(t) {
+	case "object":
+		if(o instanceof Array) {
+			if(o.__enum__) {
+				if(o.length == 2) return o[0];
+				var str2 = o[0] + "(";
+				s += "\t";
+				var _g1 = 2;
+				var _g = o.length;
+				while(_g1 < _g) {
+					var i1 = _g1++;
+					if(i1 != 2) str2 += "," + js.Boot.__string_rec(o[i1],s); else str2 += js.Boot.__string_rec(o[i1],s);
+				}
+				return str2 + ")";
+			}
+			var l = o.length;
+			var i;
+			var str1 = "[";
+			s += "\t";
+			var _g2 = 0;
+			while(_g2 < l) {
+				var i2 = _g2++;
+				str1 += (i2 > 0?",":"") + js.Boot.__string_rec(o[i2],s);
+			}
+			str1 += "]";
+			return str1;
+		}
+		var tostr;
+		try {
+			tostr = o.toString;
+		} catch( e ) {
+			return "???";
+		}
+		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
+			var s2 = o.toString();
+			if(s2 != "[object Object]") return s2;
+		}
+		var k = null;
+		var str = "{\n";
+		s += "\t";
+		var hasp = o.hasOwnProperty != null;
+		for( var k in o ) {
+		if(hasp && !o.hasOwnProperty(k)) {
+			continue;
+		}
+		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
+			continue;
+		}
+		if(str.length != 2) str += ", \n";
+		str += s + k + " : " + js.Boot.__string_rec(o[k],s);
+		}
+		s = s.substring(1);
+		str += "\n" + s + "}";
+		return str;
+	case "function":
+		return "<function>";
+	case "string":
+		return o;
+	default:
+		return String(o);
+	}
+};
 if(Array.prototype.indexOf) HxOverrides.indexOf = function(a,o,i) {
 	return Array.prototype.indexOf.call(a,o,i);
 };
-Math.NaN = Number.NaN;
-Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
-Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
-Math.isFinite = function(i) {
-	return isFinite(i);
-};
-Math.isNaN = function(i1) {
-	return isNaN(i1);
-};
+String.__name__ = true;
+Array.__name__ = true;
 at.dotpoint.math.MathUtil.ZERO_TOLERANCE = 1e-08;
 at.dotpoint.math.MathUtil.RAD_DEG = 57.29577951308232;
 at.dotpoint.math.MathUtil.DEG_RAD = 0.017453292519943295;
 at.dotpoint.math.MathUtil.FLOAT_MAX = 3.4028234663852886e+37;
 at.dotpoint.math.MathUtil.FLOAT_MIN = -3.4028234663852886e+37;
+calculator.VertexTriangle.instance = new calculator.VertexTriangle();
 Main.main();
 })();

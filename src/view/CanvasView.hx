@@ -5,7 +5,7 @@ import at.dotpoint.display.Shape;
 import at.dotpoint.display.Sprite;
 import at.dotpoint.display.TextField;
 import at.dotpoint.math.geom.Rectangle;
-import at.dotpoint.math.vector.Vector2;
+import at.dotpoint.math.vector.IVector2;
 
 /**
  * ...
@@ -18,7 +18,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * key: 	vertex coordinates
 	 * value:	index/debug string
 	 */
-	public var debugVertex:Map<Vector2,String>;
+	public var debugVertex:Map<IVector2,String>;
 	
 	/**
 	 * num unique Vertices within debugVertex
@@ -55,7 +55,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 		this.countVertex 	= 0;
 		
 		this.debugRectangle = new Map<Rectangle,String>();	
-		this.debugVertex 	= new Map<Vector2,String>();
+		this.debugVertex 	= new Map<IVector2,String>();
 		
 		this.canvas = new Sprite();
 		this.addChild( this.canvas );
@@ -69,13 +69,13 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * 
 	 * @param	list
 	 */
-	public function drawOutline( list:Array<Vector2> ):Void
+	public function drawOutline( list:Array<IVector2> ):Void
 	{
 		var shape:Shape = new Shape();
 		
 		for( v in 0...list.length + 1 )
 		{
-			var vertex:Vector2 = list[v % list.length];			
+			var vertex:IVector2 = list[v % list.length];			
 			
 			if( v == 0 )
 				shape.graphic.moveTo( vertex.x, vertex.y );
@@ -136,7 +136,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * @param	a
 	 * @param	b
 	 */
-	public function drawSplitLine( a:Vector2, b:Vector2 ):Void
+	public function drawSplitLine( a:IVector2, b:IVector2 ):Void
 	{
 		var shape:Shape = new Shape();
 			shape.graphic.moveTo( a.x, a.y );
@@ -151,7 +151,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * 
 	 * @param	a
 	 */
-	public function drawSplitStart( a:Vector2 ):Void
+	public function drawSplitStart( a:IVector2 ):Void
 	{
 		var shape:Shape = new Shape();
 			shape.graphic.createCircle( a.x, a.y, 4 );
@@ -165,7 +165,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * 
 	 * @param	a
 	 */
-	public function drawSplitEnd( a:Vector2 ):Void
+	public function drawSplitEnd( a:IVector2 ):Void
 	{
 		var shape:Shape = new Shape();
 			shape.graphic.createCircle( a.x, a.y, 4 );
@@ -193,7 +193,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * @param	vertex
 	 * @return
 	 */
-	private function getDebugVertex( vertex:Vector2 ):String
+	private function getDebugVertex( vertex:IVector2 ):String
 	{
 		if( !this.debugVertex.exists( vertex ) )
 			this.setDebugVertex( vertex );
@@ -204,7 +204,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	/**
 	 * 
 	 */
-	private function setDebugVertex( vertex:Vector2 ):Void
+	private function setDebugVertex( vertex:IVector2 ):Void
 	{
 		var index:Int 	 = this.countVertex++;
 		var value:String = "[" + index + "]";
@@ -253,7 +253,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	 * @param	coordinates
 	 * @return
 	 */
-	private function calculateBoundings( coordinates:Array<Vector2> ):Rectangle
+	private function calculateBoundings( coordinates:Array<IVector2> ):Rectangle
 	{
 		var bounding:Rectangle = new Rectangle();		
 		

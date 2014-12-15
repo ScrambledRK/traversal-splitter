@@ -51,7 +51,7 @@
   <!-- Other project options -->
   <options>
     <option showHiddenPaths="False" />
-    <option testMovie="OpenDocument" />
+    <option testMovie="Default" />
     <option testMovieCommand="bin\as3/Partitioning.swf" />
   </options>
   <!-- Plugin storage -->

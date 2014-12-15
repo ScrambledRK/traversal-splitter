@@ -10,11 +10,11 @@ class calculator_EdgeContainer {
 	public $vertical;
 	public function insert($a, $b) {
 		if($this->isVertical($a, $b)) {
-			$index = $this->getIndex($a->x, true);
+			$index = $this->getIndex($a->get_x(), true);
 			$this->vertical->insert($index * 2, $a);
 			$this->vertical->insert($index * 2, $b);
 		} else {
-			$index1 = $this->getIndex($a->y, false);
+			$index1 = $this->getIndex($a->get_y(), false);
 			$this->horizontal->insert($index1 * 2, $a);
 			$this->horizontal->insert($index1 * 2, $b);
 		}
@@ -29,15 +29,15 @@ class calculator_EdgeContainer {
 		}
 	}
 	public function split($start, $dir) {
-		$isVertical = Math::abs($dir->x) < Math::abs($dir->y);
+		$isVertical = Math::abs($dir->get_x()) < Math::abs($dir->get_y());
 		if($isVertical) {
 			$ystep = null;
-			if($dir->y < 0) {
+			if($dir->get_y() < 0) {
 				$ystep = -1;
 			} else {
 				$ystep = 1;
 			}
-			$hstart = $this->getIndex($start->y, false) - 1;
+			$hstart = $this->getIndex($start->get_y(), false) - 1;
 			$hlength = $this->horizontal->length >> 1;
 			while(($hstart += $ystep) >= 0 && $hstart <= $hlength) {
 				$hindex = $hstart * 2;
@@ -46,19 +46,19 @@ class calculator_EdgeContainer {
 				if($a === $start || $b === $start) {
 					continue;
 				}
-				if($start->x >= $a->x && $start->x <= $b->x || $start->x >= $b->x && $start->x <= $a->x) {
+				if($start->get_x() >= $a->get_x() && $start->get_x() <= $b->get_x() || $start->get_x() >= $b->get_x() && $start->get_x() <= $a->get_x()) {
 					return $this->insertSplit($start, $a, $b);
 				}
 				unset($hindex,$b,$a);
 			}
 		} else {
 			$xstep = null;
-			if($dir->x < 0) {
+			if($dir->get_x() < 0) {
 				$xstep = -1;
 			} else {
 				$xstep = 1;
 			}
-			$vstart = $this->getIndex($start->x, true) - 1;
+			$vstart = $this->getIndex($start->get_x(), true) - 1;
 			$vlength = $this->vertical->length >> 1;
 			while(($vstart += $xstep) >= 0 && $vstart <= $vlength) {
 				$vindex = $vstart * 2;
@@ -67,7 +67,7 @@ class calculator_EdgeContainer {
 				if($a1 === $start || $b1 === $start) {
 					continue;
 				}
-				if($start->y >= $a1->y && $start->y <= $b1->y || $start->y >= $b1->y && $start->y <= $a1->y) {
+				if($start->get_y() >= $a1->get_y() && $start->get_y() <= $b1->get_y() || $start->get_y() >= $b1->get_y() && $start->get_y() <= $a1->get_y()) {
 					return $this->insertSplit($start, $a1, $b1);
 				}
 				unset($vindex,$b1,$a1);
@@ -76,13 +76,13 @@ class calculator_EdgeContainer {
 		return null;
 	}
 	public function insertSplit($start, $a, $b) {
-		$split = new calculator_Vertex(null, null);
+		$split = new calculator_Vertex(null);
 		if($this->isVertical($a, $b)) {
-			$split->x = $a->x;
-			$split->y = $start->y;
+			$split->set_x($a->get_x());
+			$split->set_y($start->get_y());
 		} else {
-			$split->x = $start->x;
-			$split->y = $a->y;
+			$split->set_x($start->get_x());
+			$split->set_y($a->get_y());
 		}
 		$this->remove($a, $b);
 		$this->insert($split, $start);
@@ -105,7 +105,7 @@ class calculator_EdgeContainer {
 				$_g = 0;
 				while($_g < $vlength) {
 					$v = $_g++;
-					if(_hx_array_get($this->vertical, $v * 2)->x > $value) {
+					if(_hx_array_get($this->vertical, $v * 2)->get_x() > $value) {
 						return $v;
 					}
 					unset($v);
@@ -118,7 +118,7 @@ class calculator_EdgeContainer {
 				$_g1 = 0;
 				while($_g1 < $hlength) {
 					$h = $_g1++;
-					if(_hx_array_get($this->horizontal, $h * 2)->y > $value) {
+					if(_hx_array_get($this->horizontal, $h * 2)->get_y() > $value) {
 						return $h;
 					}
 					unset($h);
@@ -129,8 +129,8 @@ class calculator_EdgeContainer {
 		return -1;
 	}
 	public function isVertical($a, $b) {
-		$a1 = $a->x;
-		$b1 = $b->x;
+		$a1 = $a->get_x();
+		$b1 = $b->get_x();
 		if($a1 > $b1) {
 			return $a1 - $b1 < 1e-08;
 		} else {

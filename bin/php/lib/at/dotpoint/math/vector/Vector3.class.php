@@ -15,8 +15,8 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 		if($x === null) {
 			$x = 0;
 		}
-		$this->x = $x;
-		$this->y = $y;
+		$this->set_x($x);
+		$this->set_y($y);
 		$this->z = $z;
 		$this->w = $w;
 	}}
@@ -25,7 +25,19 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 	public $z;
 	public $w;
 	public function hclone() {
-		return new at_dotpoint_math_vector_Vector3($this->x, $this->y, $this->z, $this->w);
+		return new at_dotpoint_math_vector_Vector3($this->get_x(), $this->get_y(), $this->z, $this->w);
+	}
+	public function get_x() {
+		return $this->x;
+	}
+	public function set_x($value) {
+		return $this->x = $value;
+	}
+	public function get_y() {
+		return $this->y;
+	}
+	public function set_y($value) {
+		return $this->y = $value;
 	}
 	public function normalize() {
 		$l = $this->length();
@@ -33,23 +45,29 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 			return;
 		}
 		$k = 1. / $l;
-		$this->x *= $k;
-		$this->y *= $k;
+		{
+			$_g = $this;
+			$_g->set_x($_g->get_x() * $k);
+		}
+		{
+			$_g1 = $this;
+			$_g1->set_y($_g1->get_y() * $k);
+		}
 		$this->z *= $k;
 	}
 	public function length() {
 		return Math::sqrt($this->lengthSq());
 	}
 	public function lengthSq() {
-		return $this->x * $this->x + $this->y * $this->y + $this->z * $this->z;
+		return $this->get_x() * $this->get_x() + $this->get_y() * $this->get_y() + $this->z * $this->z;
 	}
 	public function toArray($w = null) {
 		if($w === null) {
 			$w = false;
 		}
 		$output = new _hx_array(array());
-		$output[0] = $this->x;
-		$output[1] = $this->y;
+		$output[0] = $this->get_x();
+		$output[1] = $this->get_y();
 		$output[2] = $this->z;
 		if($w) {
 			$output[3] = $this->w;
@@ -59,10 +77,10 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 	public function getIndex($index) {
 		switch($index) {
 		case 0:{
-			return $this->x;
+			return $this->get_x();
 		}break;
 		case 1:{
-			return $this->y;
+			return $this->get_y();
 		}break;
 		case 2:{
 			return $this->z;
@@ -78,10 +96,10 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 	public function setIndex($index, $value) {
 		switch($index) {
 		case 0:{
-			$this->x = $value;
+			$this->set_x($value);
 		}break;
 		case 1:{
-			$this->y = $value;
+			$this->set_y($value);
 		}break;
 		case 2:{
 			$this->z = $value;
@@ -95,15 +113,15 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 		}
 	}
 	public function set($x, $y, $z, $w = null) {
-		$this->x = $x;
-		$this->y = $y;
+		$this->set_x($x);
+		$this->set_y($y);
 		$this->z = $z;
 		if($w !== null) {
 			$this->w = $w;
 		}
 	}
 	public function toString() {
-		return "[Vector3;" . _hx_string_rec($this->x, "") . ", " . _hx_string_rec($this->y, "") . ", " . _hx_string_rec($this->z, "") . ", " . _hx_string_rec($this->w, "") . "]";
+		return "[Vector3;" . _hx_string_rec($this->get_x(), "") . ", " . _hx_string_rec($this->get_y(), "") . ", " . _hx_string_rec($this->z, "") . ", " . _hx_string_rec($this->w, "") . "]";
 	}
 	public function __call($m, $a) {
 		if(isset($this->$m) && is_callable($this->$m))
@@ -119,8 +137,8 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 		if($output === null) {
 			$output = new at_dotpoint_math_vector_Vector3(null, null, null, null);
 		}
-		$output->x = $a->x + $b->x;
-		$output->y = $a->y + $b->y;
+		$output->set_x($a->get_x() + $b->get_x());
+		$output->set_y($a->get_y() + $b->get_y());
 		$output->z = $a->z + $b->z;
 		return $output;
 	}
@@ -128,8 +146,8 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 		if($output === null) {
 			$output = new at_dotpoint_math_vector_Vector3(null, null, null, null);
 		}
-		$output->x = $a->x - $b->x;
-		$output->y = $a->y - $b->y;
+		$output->set_x($a->get_x() - $b->get_x());
+		$output->set_y($a->get_y() - $b->get_y());
 		$output->z = $a->z - $b->z;
 		return $output;
 	}
@@ -137,8 +155,8 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 		if($output === null) {
 			$output = new at_dotpoint_math_vector_Vector3(null, null, null, null);
 		}
-		$output->x = $a->x * $scalar;
-		$output->y = $a->y * $scalar;
+		$output->set_x($a->get_x() * $scalar);
+		$output->set_y($a->get_y() * $scalar);
 		$output->z = $a->z * $scalar;
 		return $output;
 	}
@@ -146,24 +164,24 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 		if($output === null) {
 			$output = new at_dotpoint_math_vector_Vector3(null, null, null, null);
 		}
-		$output->x = $a->y * $b->z - $a->z * $b->y;
-		$output->y = $a->z * $b->x - $a->x * $b->z;
-		$output->z = $a->x * $b->y - $a->y * $b->x;
+		$output->set_x($a->get_y() * $b->z - $a->z * $b->get_y());
+		$output->set_y($a->z * $b->get_x() - $a->get_x() * $b->z);
+		$output->z = $a->get_x() * $b->get_y() - $a->get_y() * $b->get_x();
 		return $output;
 	}
 	static function dot($a, $b) {
-		return $a->x * $b->x + $a->y * $b->y + $a->z * $b->z;
+		return $a->get_x() * $b->get_x() + $a->get_y() * $b->get_y() + $a->z * $b->z;
 	}
 	static function multiplyMatrix($a, $b, $output = null) {
 		if($output === null) {
 			$output = new at_dotpoint_math_vector_Vector3(null, null, null, null);
 		}
-		$x = $a->x;
-		$y = $a->y;
+		$x = $a->get_x();
+		$y = $a->get_y();
 		$z = $a->z;
 		$w = $a->w;
-		$output->x = $b->m11 * $x + $b->m12 * $y + $b->m13 * $z + $b->m14 * $w;
-		$output->y = $b->m21 * $x + $b->m22 * $y + $b->m23 * $z + $b->m24 * $w;
+		$output->set_x($b->m11 * $x + $b->m12 * $y + $b->m13 * $z + $b->m14 * $w);
+		$output->set_y($b->m21 * $x + $b->m22 * $y + $b->m23 * $z + $b->m24 * $w);
 		$output->z = $b->m31 * $x + $b->m32 * $y + $b->m33 * $z + $b->m34 * $w;
 		$output->w = $b->m41 * $x + $b->m42 * $y + $b->m43 * $z + $b->m44 * $w;
 		return $output;
@@ -212,12 +230,13 @@ class at_dotpoint_math_vector_Vector3 implements at_dotpoint_math_vector_IVector
 			unset($sum,$i);
 		}
 	}
+	static $__properties__ = array("set_y" => "set_y","get_y" => "get_y","set_x" => "set_x","get_x" => "get_x");
 	function __toString() { return $this->toString(); }
 }
 function at_dotpoint_math_vector_Vector3_0(&$a, &$b) {
 	{
-		$a1 = $a->x;
-		$b1 = $b->x;
+		$a1 = $a->get_x();
+		$b1 = $b->get_x();
 		if($a1 > $b1) {
 			return $a1 - $b1 < 1e-08;
 		} else {
@@ -228,8 +247,8 @@ function at_dotpoint_math_vector_Vector3_0(&$a, &$b) {
 }
 function at_dotpoint_math_vector_Vector3_1(&$a, &$b) {
 	{
-		$a2 = $a->y;
-		$b2 = $b->y;
+		$a2 = $a->get_y();
+		$b2 = $b->get_y();
 		if($a2 > $b2) {
 			return $a2 - $b2 < 1e-08;
 		} else {

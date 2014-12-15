@@ -9,31 +9,20 @@ class Main {
 	public function initialize() {
 		$this->calculator = new calculator_TraversalSplitter();
 	}
-	public function calculate($inputString) {
-		$input = $this->parseInput($inputString);
-		$result = $this->calculator->calculate($input);
+	public function calculate($input) {
+		$input1 = $this->parseInput($input);
+		$result = $this->calculator->calculate($input1);
 		return $result;
 	}
 	public function parseInput($input) {
-		$coordinates = new _hx_array(array());
-		$splitted = _hx_explode(" ", $input);
-		$length = Std::int($splitted->length * 0.5);
-		{
-			$_g = 0;
-			while($_g < $length) {
-				$j = $_g++;
-				$index = $j * 2;
-				$x = Std::parseInt($splitted[$index]);
-				$y = Std::parseInt($splitted[$index + 1]);
-				$coordinates->push($x);
-				$coordinates->push($y);
-				unset($y,$x,$j,$index);
-			}
+		$output = null;
+		if(Std::is($input, _hx_qtype("String"))) {
+			$output = _hx_deref(new converter_StringConverter(null))->convert($input);
 		}
-		if($coordinates->length === 0) {
-			throw new HException("input issue");
+		if($output === null) {
+			throw new HException("unable to convert given input " . Std::string($input));
 		}
-		return $coordinates;
+		return $output;
 	}
 	public function __call($m, $a) {
 		if(isset($this->$m) && is_callable($this->$m))

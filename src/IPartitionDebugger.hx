@@ -1,6 +1,7 @@
 package ;
 
 import at.dotpoint.math.geom.Rectangle;
+import at.dotpoint.math.vector.IVector2;
 import at.dotpoint.math.vector.Vector2;
 
 /**
@@ -14,7 +15,7 @@ interface IPartitionDebugger
 	 * 
 	 * @param	list
 	 */
-	public function drawOutline( list:Array<Vector2> ):Void;
+	public function drawOutline( list:Array<IVector2> ):Void;
 	
 	/**
 	 * 
@@ -28,18 +29,18 @@ interface IPartitionDebugger
 	 * @param	a
 	 * @param	b
 	 */
-	public function drawSplitLine( a:Vector2, b:Vector2 ):Void;
+	public function drawSplitLine( a:IVector2, b:IVector2 ):Void;
 	
 	/**
 	 * 
 	 * @param	a
 	 */
-	public function drawSplitStart( a:Vector2 ):Void;
+	public function drawSplitStart( a:IVector2 ):Void;
 	
 	/**
 	 * 
 	 * @param	a
 	 */
-	public function drawSplitEnd( a:Vector2 ):Void;
+	public function drawSplitEnd( a:IVector2 ):Void;
 	
 }

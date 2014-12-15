@@ -1,6 +1,9 @@
 package ;
 
+import at.dotpoint.math.geom.Rectangle;
+import at.dotpoint.math.vector.Vector2;
 import calculator.TraversalSplitter;
+import converter.StringConverter;
 
 #if display
 	import view.CanvasView;
@@ -20,12 +23,16 @@ import calculator.TraversalSplitter;
 class Main
 {
 	
+	/**
+	 * singleton (habit, convinience, ... )
+	 */
 	private static var instance:Main;
 	
 	// --------------- //	
 	
 	/**
-	 * doing all the work
+	 * calculating rectangular partitions for a given set of coordinates of an orthogonal polygon
+	 * this is where all the magic happens ...
 	 */
 	private var calculator:IPartitionCalculator;
 	
@@ -37,7 +44,7 @@ class Main
 	private var controller:ControllerView;
 	
 	/**
-	 * debug rectangle
+	 * canvas for all the debug informations
 	 */
 	private var canvas:CanvasView;
 	
@@ -77,10 +84,10 @@ class Main
 	/**
 	 * 
 	 */
-	public function calculate( inputString:String ):Array<Int>
-	{
-		var input:Array<Int> = this.parseInput( inputString );
-		var result:Array<Int> = this.calculator.calculate( input );
+	public function calculate( input:Dynamic ):Dynamic
+	{		
+		var input:Array<Vector2> = this.parseInput( input );
+		var result:Array<Rectangle> = this.calculator.calculate( input );		
 		
 		return result;
 	}
@@ -90,30 +97,21 @@ class Main
 	 * @param	input
 	 * @return
 	 */
-	private function parseInput( input:String ):Array<Int>
+	private function parseInput( input:Dynamic ):Array<Vector2>
 	{
-		var coordinates:Array<Int> = new Array<Int>();
+		var output:Array<Vector2> = null;
 		
 		// ----------- //
 		
-		var splitted:Array<String> = input.split(" ");		
-		var length:Int = Std.int( splitted.length * 0.5 );		
+		if( Std.is( input, String ) )
+			output = new StringConverter().convert( cast input );
 		
-		for( j in 0...length )
-		{
-			var index:Int = j * 2;
-			
-			var x:Int = Std.parseInt( splitted[ index + 0 ] );
-			var y:Int = Std.parseInt( splitted[ index + 1 ] );
-			
-			coordinates.push( x );
-			coordinates.push( y );
-		}
+		// ----------- //	
 		
-		if( coordinates.length == 0 )
-			throw "input issue";
+		if( output == null )
+			throw "unable to convert given input " + input;
 		
-		return coordinates;
+		return output;
 	}
 	
 	// ************************************************************************ //
@@ -132,8 +130,8 @@ class Main
 		
 		// ------------------------ //
 		
-		#if debug
-			this.controller.output = this.calculate( this.controller.input ).toString();
+		#if debug			
+			this.controller.output = this.calculate( this.controller.input ).toString();						
 		#else
 			try
 			{

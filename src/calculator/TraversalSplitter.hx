@@ -5,17 +5,22 @@ import at.dotpoint.math.vector.Vector2;
 import at.dotpoint.math.vector.Vector3;
 
 /**
- * ...
+ * partitionates a given orthogonal polygon into several rectangular areas. it does so by
+ * creating a graph out of the given coordinate system, traverses the graph clockwise and 
+ * looks out for points that create a counter-clockwise walk. those vertices define points
+ * where rectangles can be found. it then inserts on all those points lines into the graph
+ * and then traverses the graph once again to find all closed-walks defining rectangles.
+ * 
  * @author RK
  */
 class TraversalSplitter implements IPartitionCalculator
 {
 
-	#if debug
+	#if debug	
 	/**
-	 * draws/outputs infos
+	 * draws/traces additional informations/visualisations
 	 */
-	public var debugger:IPartitionDebugger;	
+	public var debugger:IPartitionDebugger;		
 	#end
 	
 	// ------------------ //
@@ -39,7 +44,7 @@ class TraversalSplitter implements IPartitionCalculator
 	// ------------------ //
 	
 	/**
-	 * output
+	 * output: rectangles enclosed by the given orthogonal polygon
 	 */
 	private var partitions:Array<Rectangle>;
 	
@@ -61,14 +66,31 @@ class TraversalSplitter implements IPartitionCalculator
 	 * @param	input	x,y coordinates in Integer seperated by space for each outline-vertex
 	 * @return	x,y,w,h coordinates in Integer seperated by space for each partition
 	 */
-	public function calculate( input:Array<Int> ):Array<Int>
+	public function calculate( input:Array<Vector2> ):Array<Rectangle>
 	{		
-		this.prepareInput( input );
+		this.coordinates 	= new Array<Vertex>();		// all vertices, at first only outline; later split-vertices
+		this.edges 			= new EdgeContainer();		// horizontal and vertical lines used for fast intersection
 		
-		this.split();
-		this.partition();
+		this.partitions		= new Array<Rectangle>();	// found rectangles
 		
-		return this.prepareOutput();
+		// ---------------------------- //
+		
+		this.prepareInput( input );	// build graph, detect split-points
+		
+		this.split();				// insert new lines and vertices used to extract partitions
+		this.partitionate();		// traverse the graph to extract rectangular-partitions
+		
+		// ---------------------------- //
+		
+		#if debug
+			for( area in this.partitions )
+			{
+				if( this.debugger != null )
+					this.debugger.drawPartition( area );
+			}
+		#end
+		
+		return this.partitions;
 	}		
 	
 	// ************************************************************************ //
@@ -76,14 +98,18 @@ class TraversalSplitter implements IPartitionCalculator
 	// ************************************************************************ //	
 	
 	/**
-	 * 
+	 * - build a graph of vertices
+	 * - assert clockwise rotation
+	 * - detect counter-clockwise vertices for splitting
+	 * - collect all orthogonal lines for splitting
 	 */
-	private function prepareInput( input:Array<Int> ):Void
-	{					
-		this.coordinates = this.parseInput( input );
+	private function prepareInput( input:Array<Vector2> ):Void
+	{	
+		this.toVertices( input );	// create vertices out of the input coordinates
+		this.sortClockwise();		// assert clockwise rotation, detect counter-clockwise for splitting
+		this.buildGraph();			// assign neighbor vertices for each vertex, extract orthogonal lines
 		
-		this.traverse();	
-		this.buildGraph();
+		// TODO: check if given orthogonal polygon is closed, truly orthogonal and alternating vertical/horizontal lines (no useless vertices)
 		
 		// ---------------------------- //
 		
@@ -93,56 +119,49 @@ class TraversalSplitter implements IPartitionCalculator
 				this.debugger.drawOutline( cast this.coordinates );	
 				
 				for( vertex in this.splitters )
-					this.debugger.drawSplitStart( vertex );			
+					this.debugger.drawSplitStart( vertex.coordinate );			
 			}
 		#end
 	}
 	
 	/**
-	 * 
-	 * @param	input x, y, x, y, x, y ...
-	 * @return	vec1, vec2, vec3, ...
+	 * fill up this.coordinates with given vertices
 	 */
-	private function parseInput( input:Array<Int> ):Array<Vertex>
+	private function toVertices( input:Array<Vector2> ):Void
 	{
-		var coordinates:Array<Vertex> = new Array<Vertex>();		
-		var length:Int = Std.int( input.length * 0.5 ) - 1;	
-		
-		for( j in 0...length )
-		{
-			var index:Int = j * 2;
-			
-			var x:Int = input[ index + 0 ];
-			var y:Int = input[ index + 1 ];
-			
-			var vertex:Vertex = new Vertex( x, y );
-			
-			coordinates.push( vertex );
+		for( point in input )
+		{			
+			this.coordinates.push( new Vertex( point ) );
 		}
 		
-		return coordinates;
+		// ------------ //
+		
+		var first:Vertex = this.coordinates[0];
+		var last:Vertex  = this.coordinates[this.coordinates.length - 1];
+		
+		if( Vector2.isEqual( first.coordinate, last.coordinate ) ) // we do not want overlapping vertices
+			this.coordinates.pop();
 	}
 	
 	/**
 	 * - ensure vertices are indexed clockwise for consistency
 	 * - store counter-clockwise vertices as "splitters" 
 	 */
-	private function traverse():Void
+	private function sortClockwise():Void
 	{		
 		var clockwise:Array<Vertex> 	= new Array<Vertex>();		
 		var counterwise:Array<Vertex> 	= new Array<Vertex>();		
 		
 		for( v in 0...this.coordinates.length )
 		{
-			var p1:Vertex = this.coordinates[(v + 0) % this.coordinates.length];
-			var p2:Vertex = this.coordinates[(v + 1) % this.coordinates.length];
-			var p3:Vertex = this.coordinates[(v + 2) % this.coordinates.length];			
+			var triangle:VertexTriangle = this.getTriangle( v, true );		
 			
-			if( this.isClockwise( p1, p2, p3 ) )	clockwise.push( p2 );			
-			else									counterwise.push( p2 );			
+			if( triangle.isClockwise() )	clockwise.push( triangle.p2 );			
+			else							counterwise.push( triangle.p2 );			
 		}
 		
 		// ---------------------------- //
+		// assert clockwise, counter-clockwise are "splitters"
 		
 		if( clockwise.length < counterwise.length )
 		{			
@@ -172,18 +191,14 @@ class TraversalSplitter implements IPartitionCalculator
 	 */
 	private function buildGraph():Void
 	{
-		this.edges = new EdgeContainer();		
-		
 		for( v in 0...this.coordinates.length )
 		{
-			var p1:Vertex = this.coordinates[(v + 0) % this.coordinates.length];
-			var p2:Vertex = this.coordinates[(v + 1) % this.coordinates.length];
-			var p3:Vertex = this.coordinates[(v + 2) % this.coordinates.length];			
+			var triangle:VertexTriangle = this.getTriangle( v, true );		
 			
-			p2.neighbors.add( p1 );
-			p2.neighbors.add( p3 );			
+			triangle.p2.neighbors.add( triangle.p1 ); 		// clockwise previous neighbor
+			triangle.p2.neighbors.add( triangle.p3 ); 		// clockwise next neighbor			
 			
-			this.edges.insert( p1, p2 );
+			this.edges.insert( triangle.p1, triangle.p2 );	// line between previous and current vertex
 		}
 		
 		trace( "vertical:  " + this.edges.vertical );
@@ -195,25 +210,27 @@ class TraversalSplitter implements IPartitionCalculator
 	// ************************************************************************ //	
 	
 	/**
-	 * split edges normal to the split-points and insert a new vertex + edge
+	 * insert a new line for each counter-clockwise vertex in the polygon outline
+	 * normal to the direction of the line between the split-vertex and its neighbor.
+	 * 
+	 * insert a new vertex on the point this new line crosses another line of the polygon.
+	 * this might be a line from the original polygon or another inserted one from a previous split.
+	 * 
+	 * adjust the graph to respect the inserted line and vertex	
+	 * 
+	 * TODO: remove graph adjustment from EdgeContainer (should not be its responsibility)
 	 */
 	private function split():Void 
 	{
-		for( v in 0...this.splitters.length )
+		for( vertex in this.splitters )
 		{
-			var current:Vertex 		= this.splitters[v];
-			var previous:Vertex 	= current.neighbors.first(); 			// only works on first iteration, afterwards order is chaotic
-			
-			// ------------------ //	
-			
-			var normal:Vector2 = this.getNormal( current, previous );			
-			
-			var split:Vertex = this.edges.split( current, normal );			// already adjust graph + edges				
+			var normal:Vector2 = this.getNormal( vertex );				// line normal to the given vertex and its neighbor
+			var split:Vertex   = this.edges.split( vertex, normal );	// point this new line intersects another line, graph manipulation			
 			
 			if( split == null )
-				throw "split could not be resolved";
+				throw "split could not be resolved, check the input";	// cannot happen given a valid orthogonal polygon graph
 			
-			this.coordinates.push( split );				
+			this.coordinates.push( split );								// order is no longer important
 			
 			// ------------------ //
 			
@@ -222,65 +239,55 @@ class TraversalSplitter implements IPartitionCalculator
 				
 				if( this.debugger != null )
 				{				
-					this.debugger.drawSplitLine( current, split );	
-					this.debugger.drawSplitEnd( split );		
+					this.debugger.drawSplitLine( vertex.coordinate, split.coordinate );	
+					this.debugger.drawSplitEnd( split.coordinate );		
 				}
 			#end
 		}
 	}
 	
 	/**
-	 * traverse the graph finding close rectangular loops and store them as partitions
+	 * traverse the graph finding closed rectangular loops and store them as partitions
+	 * and make sure to discared duplicates. loops are found using a clockwise check from
+	 * a set of 3 vertices, this time including previously splitted lines/vertices
+	 * 
+	 * TODO: could be optimized to avoid finding the same partition multiple times
+	 * TODO: could run into an infinit loop in case the graph is not valid 
 	 */
-	private function partition():Void
+	private function partitionate():Void
 	{	
-		this.partitions = new Array<Rectangle>();
-		
-		#if debug
-			var counter:Int = 0;
-		#end
-		
-		while( this.coordinates.length > 0 )
-		{
-			var start:Vertex 	= this.coordinates.pop();
+		for( start in this.coordinates )
+		{			
+			var current:Vertex 		= start;	// current, previous, next define a triangle for clockwise check
+			var previous:Vertex 	= null;		// closed clockwise traversal using the new graph gives the smallest
+			var next:Vertex			= null;		// possible rectangle ...
 			
-			var current:Vertex 	= start;
-			var previous:Vertex = null;
-			var next:Vertex 	= null;			
-			
-			trace("");
-			trace("new partition", start );			
-			
-			var partition:Rectangle = new Rectangle();
+			var partition:Rectangle = null;
 			
 			// ------------------- //
 			// traverse partition:
 			
 			do
 			{				
-				next = this.selectCircleNode( current, previous );
+				next = this.selectClockwiseVertex( current, previous );
 				
-				if( next == null ) // could not select clockwise, skip as the partition will be t at some point
+				if( next == null ) 	// could not select a clockwise vertex, skip - another partition will include the current vertex
 				{					
-					trace("skip", current);					
-					
-					partition = null;					
+					trace("skip", current);						
 					break;
 				}				
-				else
+				else				// found a clockwise vertex, a partition can be created
 				{					
-					trace("select", current + " > " + next, "\t", next.neighbors );					
+					trace("select", previous, current, next, "\t neighbors:" + next.neighbors );					
+					
+					if( partition == null )
+						partition = new Rectangle();
 					
 					this.expandBounding( next, partition );
 				}							
 				
 				previous = current;
 				current	 = next;	
-				
-				#if debug 
-					if( counter++ > 800 )
-						return;
-				#end
 			}
 			while( current != start );
 			
@@ -293,66 +300,54 @@ class TraversalSplitter implements IPartitionCalculator
 	}
 	
 	/**
-	 * TODO: use isClockwise and remove predefined rotation
-	 * 
 	 * @param	previous
 	 * @param	current
 	 * @return
 	 */
-	private function selectCircleNode( current:Vertex, previous:Vertex ):Vertex
+	private function selectClockwiseVertex( current:Vertex, previous:Vertex ):Vertex
 	{
+		var iterator:Iterator<Vertex> = null;	// used in case no previous is given to try all possible neighbors as a "previous" vertex
+		var possible:Vertex = null;				// a vertex that is on the same line as the previous and current one. not clockwise, but still valid 
+		
 		if( previous == null )
-			previous = current;		
-		
-		var rotation:Array<Vector2> = new Array<Vector2>();		// preference in selecting neighbor: clockwise
-			rotation[0] = new Vector2(  1,  0 );				// right
-			rotation[1] = new Vector2(  0,  1 );				// down
-			rotation[2] = new Vector2( -1,  0 );				// left
-			rotation[3] = new Vector2(  0, -1 );				// up
-		
-		// ----------------- //	
-		// select start:
-		
-		var direction:Vector2 = this.getDirection( current, previous );	
-		
-		var rotationStart:Int 	= -1;
-		var rotationOffset:Int 	= 1; // next direction is first to check, on fail set to 0 to try current
-		
-		for( r in 0...rotation.length )
 		{
-			if( Vector2.isEqual( rotation[r], direction ) )
-			{
-				rotationStart = r; 
-				break;
-			}
+			iterator = current.neighbors.iterator();
+			previous = current.neighbors.first();		
 		}
 		
-		// ----------------- //		
-		// select neighbor:
-		
-		for( r in 0...rotation.length )
+		while( previous != null )
 		{
-			var index:Int = rotationStart + rotationOffset + r;
-			
-			if( index < 0 )
-				index = rotation.length - index;
-			
-			var desired:Vector2 = rotation[ index % rotation.length ];
-			
-			// ---------------- //
-			
 			for( neighbor in current.neighbors.iterator() )
 			{
-				var direction:Vector2 = this.getDirection( neighbor, current );
+				if( neighbor == previous )
+					continue;
 				
-				if( Vector2.isEqual( direction, desired ) && neighbor != previous )
+				var triangle:VertexTriangle = VertexTriangle.instance;
+					triangle.p1 = previous;
+					triangle.p2 = current;
+					triangle.p3 = neighbor;
+				
+				if( triangle.isClockwise() )				// we found our next vertex in case the triangle is clockwise
 				{					
 					return neighbor;
-				}				
-			}			
+				}
+				else
+				{
+					if( triangle.isClockwise( true ) )		// otherwise we check if its at least in the same direction
+						possible = neighbor;				// and store it, as it might be a fit
+				}
+			}	
 			
-			rotationOffset = -1; // reset to try current rotation next, then normal loop again
-		}		
+			// -------------------- //
+			
+			if( possible != null )							// we did not find a clockwise, but is there at least one in the same direction?
+				return possible;
+			
+			if( iterator == null || !iterator.hasNext() )	// can't try further previous vertices in case we were given a previous (or tried all)
+				break;
+			
+			previous = iterator.next();						// the previous vertex does not produce a clockwise direction, check another
+		}
 		
 		return null;
 	}
@@ -360,33 +355,6 @@ class TraversalSplitter implements IPartitionCalculator
 	// ************************************************************************ //
 	// Output:
 	// ************************************************************************ //
-	
-	/**
-	 * - remove duplicated partitions
-	 * - parse output
-	 */
-	private function prepareOutput():Array<Int>
-	{
-		var output:Array<Int> = new Array<Int>();
-		
-		for( area in this.partitions )
-		{
-			output.push( Std.int( area.x 		) );
-			output.push( Std.int( area.y		) );
-			output.push( Std.int( area.width  	) );
-			output.push( Std.int( area.height 	) );			
-		}
-		
-		#if debug
-			for( area in this.partitions )
-			{
-				if( this.debugger != null )
-					this.debugger.drawPartition( area );
-			}
-		#end
-		
-		return output;
-	}
 	
 	/**
 	 * 
@@ -399,7 +367,7 @@ class TraversalSplitter implements IPartitionCalculator
 		{			
 			if( area == partition )
 				continue;				
-				
+			
 			if( Vector2.isEqual( partition.topLeft, 	area.topLeft 	 )
 			&&	Vector2.isEqual( partition.bottomRight, area.bottomRight ) )
 			{				
@@ -415,12 +383,43 @@ class TraversalSplitter implements IPartitionCalculator
 	// ************************************************************************ //	
 	
 	/**
+	 * returns a triangle composed of 3 vertices using the given index to lookup
+	 * the first vertex withing the coordinates list and add the other following 
+	 * vertices to the triangle, looping through the list to the beginning if necessary.
 	 * 
-	 * @param	current
-	 * @param	previous
+	 * @param	index	starting index of the polygon (first vertex)
+	 * @param	pool 	optionally set this to true to reuse an existing instance of 
+	 * 					VertexTriangle, false to create a new one
+	 * 
+	 * @return	VertexTriangle composed of 3 vertices from the coordinates list
 	 */
-	private function getNormal( current:Vertex, previous:Vertex ):Vector2
+	private function getTriangle( index:Int, ?pool:Bool = false ):VertexTriangle
 	{
+		var p1:Vertex = this.coordinates[(index + 0) % this.coordinates.length];
+		var p2:Vertex = this.coordinates[(index + 1) % this.coordinates.length];
+		var p3:Vertex = this.coordinates[(index + 2) % this.coordinates.length];	
+		
+		var triangle:VertexTriangle = pool ? VertexTriangle.instance : new VertexTriangle();
+			triangle.p1 = p1;
+			triangle.p2 = p2;
+			triangle.p3 = p3;
+		
+		return triangle;
+	}
+	
+	/**
+	 * calculates the direction (normalized line) of the given vertex
+	 * and its (clockwise previous) neighbor.
+	 * 
+	 * @param	current vertex to calculate a normal from (using neighbor)
+	 * @return	direction normal to the given vertex and its neighbor
+	 * 
+	 * TODO: could pool necessary Vector2/3 instances
+	 */
+	private function getNormal( current:Vertex ):Vector2
+	{
+		var previous:Vertex = current.neighbors.first();
+		
 		var delta:Vector3 = new Vector3();
 			delta.x = current.x - previous.x;
 			delta.y = current.y - previous.y;
@@ -428,46 +427,15 @@ class TraversalSplitter implements IPartitionCalculator
 		var normal:Vector3 = Vector3.cross( delta, new Vector3( 0, 0, -1 ) );
 			normal.normalize();
 		
-		return new Vector2( normal.x, normal.y );
+		return new Vector2( normal.x, normal.y );  
 	}
 	
 	/**
+	 * expands the given bounding rectangle using the given vertex. the size of the rectangle
+	 * will be adjusted including the given vertex in case the given vertex is outside of the current rectangle.
 	 * 
-	 * @param	current
-	 * @param	previous
-	 * @return
-	 */
-	private function getDirection( current:Vertex, previous:Vertex ):Vector2
-	{
-		var direction:Vector2 = Vector2.subtract( current, previous );
-			direction.normalize();			
-			direction.x = Math.round( direction.x );			
-			direction.y = Math.round( direction.y );
-		
-		return direction;
-	}
-	
-	/**
-	 * 
-	 * @param	list
-	 * @return
-	 */
-	private function isClockwise( a:Vector2, b:Vector2, c:Vector2 ):Bool
-	{
-		var p1:Vector3 = new Vector3( a.x, a.y, 0 );
-		var p2:Vector3 = new Vector3( b.x, b.y, 0 );
-		var p3:Vector3 = new Vector3( c.x, c.y, 0 );			
-		
-		var sub1:Vector3 = Vector3.subtract( p2, p1, new Vector3() );
-		var sub2:Vector3 = Vector3.subtract( p3, p1, new Vector3() );
-		
-		return Vector3.cross( sub1, sub2 ).z > 0;
-	}
-	
-	/**
-	 * 
-	 * @param	coordinates
-	 * @return
+	 * @param	vertex to include into the given bounds
+	 * @param	bounding to insert the vertex into (adjust size to include the vertex)	
 	 */
 	private function expandBounding( vertex:Vertex, bounding:Rectangle ):Void
 	{		
@@ -481,8 +449,8 @@ class TraversalSplitter implements IPartitionCalculator
 		var nt:Float = v ? y : Math.min( bounding.top, 		y );
 		var nb:Float = v ? y : Math.max( bounding.bottom, 	y );
 		
-		if( nl != bounding.left 			// could work setting bounding.right/left etc directly
-		||	nr != bounding.right			// is copy/paste from similar code I've used somewhere else
+		if( nl != bounding.left 			// pretty sure work setting bounding.right/left etc directly
+		||	nr != bounding.right			
 		||  nt != bounding.top
 		||  nb != bounding.bottom )			
 		{	

@@ -21,101 +21,101 @@ class at_dotpoint_math_geom_Rectangle {
 	public $position;
 	public $size;
 	public function hclone() {
-		return new at_dotpoint_math_geom_Rectangle($this->position->x, $this->position->y, $this->size->x, $this->size->y);
+		return new at_dotpoint_math_geom_Rectangle($this->position->get_x(), $this->position->get_y(), $this->size->get_x(), $this->size->get_y());
 	}
 	public function setZero() {
-		$this->position->x = 0;
-		$this->position->y = 0;
-		$this->size->x = 0;
-		$this->size->y = 0;
+		$this->position->set_x(0);
+		$this->position->set_y(0);
+		$this->size->set_x(0);
+		$this->size->set_y(0);
 	}
 	public function get_x() {
-		return $this->position->x;
+		return $this->position->get_x();
 	}
 	public function set_x($value) {
-		return $this->position->x = $value;
+		return $this->position->set_x($value);
 	}
 	public function get_y() {
-		return $this->position->y;
+		return $this->position->get_y();
 	}
 	public function set_y($value) {
-		return $this->position->y = $value;
+		return $this->position->set_y($value);
 	}
 	public function get_width() {
-		return $this->size->x;
+		return $this->size->get_x();
 	}
 	public function set_width($value) {
 		if($value < 0) {
 			throw new HException("dimension below zero");
 		}
-		return $this->size->x = $value;
+		return $this->size->set_x($value);
 	}
 	public function get_height() {
-		return $this->size->y;
+		return $this->size->get_y();
 	}
 	public function set_height($value) {
 		if($value < 0) {
 			throw new HException("dimension below zero");
 		}
-		return $this->size->y = $value;
+		return $this->size->set_y($value);
 	}
 	public function get_top() {
-		return $this->position->y;
+		return $this->position->get_y();
 	}
 	public function set_top($value) {
 		{
 			$_g = $this;
 			{
-				$value1 = $_g->size->y - ($value - $this->position->y);
+				$value1 = $_g->size->get_y() - ($value - $this->position->get_y());
 				if($value1 < 0) {
 					throw new HException("dimension below zero");
 				}
-				$_g->size->y = $value1;
+				$_g->size->set_y($value1);
 			}
 		}
-		$this->position->y = $value;
+		$this->position->set_y($value);
 		return $value;
 	}
 	public function get_bottom() {
-		return $this->position->y + $this->size->y;
+		return $this->position->get_y() + $this->size->get_y();
 	}
 	public function set_bottom($value) {
 		{
-			$value1 = $value - $this->position->y;
+			$value1 = $value - $this->position->get_y();
 			if($value1 < 0) {
 				throw new HException("dimension below zero");
 			}
-			$this->size->y = $value1;
+			$this->size->set_y($value1);
 		}
 		return $value;
 	}
 	public function get_left() {
-		return $this->position->x;
+		return $this->position->get_x();
 	}
 	public function set_left($value) {
 		{
 			$_g = $this;
 			{
-				$value1 = $_g->size->x - ($value - $this->position->x);
+				$value1 = $_g->size->get_x() - ($value - $this->position->get_x());
 				if($value1 < 0) {
 					throw new HException("dimension below zero");
 				}
-				$_g->size->x = $value1;
+				$_g->size->set_x($value1);
 			}
 		}
-		$this->position->x = $value;
+		$this->position->set_x($value);
 		return $value;
 	}
 	public function get_right() {
-		return $this->position->x + $this->size->x;
+		return $this->position->get_x() + $this->size->get_x();
 	}
 	public function set_right($value) {
 		{
-			$value1 = $value - $this->position->x;
+			$value1 = $value - $this->position->get_x();
 			if($value1 < 0) {
 				throw new HException("dimension below zero");
 			}
-			$this->size->x = $value1;
+			$this->size->set_x($value1);
 		}
 		return $value;
 	}
@@ -124,33 +124,33 @@ class at_dotpoint_math_geom_Rectangle {
 	}
 	public function set_topLeft($value) {
 		{
-			$value1 = $value->y;
+			$value1 = $value->get_y();
 			{
 				$_g = $this;
 				{
-					$value2 = $_g->size->y - ($value1 - $this->position->y);
+					$value2 = $_g->size->get_y() - ($value1 - $this->position->get_y());
 					if($value2 < 0) {
 						throw new HException("dimension below zero");
 					}
-					$_g->size->y = $value2;
+					$_g->size->set_y($value2);
 				}
 			}
-			$this->position->y = $value1;
+			$this->position->set_y($value1);
 			$value1;
 		}
 		{
-			$value3 = $value->x;
+			$value3 = $value->get_x();
 			{
 				$_g1 = $this;
 				{
-					$value4 = $_g1->size->x - ($value3 - $this->position->x);
+					$value4 = $_g1->size->get_x() - ($value3 - $this->position->get_x());
 					if($value4 < 0) {
 						throw new HException("dimension below zero");
 					}
-					$_g1->size->x = $value4;
+					$_g1->size->set_x($value4);
 				}
 			}
-			$this->position->x = $value3;
+			$this->position->set_x($value3);
 			$value3;
 		}
 		return $value;
@@ -160,24 +160,24 @@ class at_dotpoint_math_geom_Rectangle {
 	}
 	public function set_bottomRight($value) {
 		{
-			$value1 = $value->y;
+			$value1 = $value->get_y();
 			{
-				$value2 = $value1 - $this->position->y;
+				$value2 = $value1 - $this->position->get_y();
 				if($value2 < 0) {
 					throw new HException("dimension below zero");
 				}
-				$this->size->y = $value2;
+				$this->size->set_y($value2);
 			}
 			$value1;
 		}
 		{
-			$value3 = $value->x;
+			$value3 = $value->get_x();
 			{
-				$value4 = $value3 - $this->position->x;
+				$value4 = $value3 - $this->position->get_x();
 				if($value4 < 0) {
 					throw new HException("dimension below zero");
 				}
-				$this->size->x = $value4;
+				$this->size->set_x($value4);
 			}
 			$value3;
 		}
@@ -191,22 +191,22 @@ class at_dotpoint_math_geom_Rectangle {
 		return $value;
 	}
 	public function isInside($x, $y) {
-		if($x < $this->position->x) {
+		if($x < $this->position->get_x()) {
 			return false;
 		}
-		if($y < $this->position->y) {
+		if($y < $this->position->get_y()) {
 			return false;
 		}
-		if($x > $this->position->x + $this->size->x) {
+		if($x > $this->position->get_x() + $this->size->get_x()) {
 			return false;
 		}
-		if($y > $this->position->y + $this->size->y) {
+		if($y > $this->position->get_y() + $this->size->get_y()) {
 			return false;
 		}
 		return true;
 	}
 	public function toString() {
-		return "x:" . _hx_string_rec($this->position->x, "") . " y:" . _hx_string_rec($this->position->y, "") . " w:" . _hx_string_rec($this->size->x, "") . " h:" . _hx_string_rec($this->size->y, "");
+		return "x:" . _hx_string_rec($this->position->get_x(), "") . " y:" . _hx_string_rec($this->position->get_y(), "") . " w:" . _hx_string_rec($this->size->get_x(), "") . " h:" . _hx_string_rec($this->size->get_y(), "");
 	}
 	public function __call($m, $a) {
 		if(isset($this->$m) && is_callable($this->$m))
