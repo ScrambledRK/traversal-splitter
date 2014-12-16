@@ -16,10 +16,23 @@ import converter.StringConverter;
 #end
 
 /**
- * ...
- * @author RK
+ * partitionates a given orthogonal polygon into several rectangular areas. provides an optional view
+ * to display the result and a very basic UI to test custom or predefined polygons. depending on the
+ * compiler flags anything view or debug related will be discarded allowing to compile a minimal version
+ * to be used in several languages.
+ * 
+ * the magic happens in TraversalSplitter.hx and EdgeContainer.hx
+ * some basic math classes are used from the dotCore library: Vector2, Vector3 and Rectangle
+ * 
+ * TODO: implement typedef/interface to inject used math classes, allowing for custom/native classes
+ * TODO: implement a more practical way to provide input/output converter instead of hardcoding a switch/case
+ * BUG:	 input is not validated sufficently, easily possible to feed the calculator with wrong/breaking data
+ * 
+ * GitHub: 		https://github.com/ScrambledRK/TraversalSplitter
+ * Blog-Post:	http://scrambledrk.blogspot.co.at/2014/07/polygon-partitioning.html
+ * 
+ * @author Gerald Hattensauer: ScrambledRK
  */
-
 class Main
 {
 	
