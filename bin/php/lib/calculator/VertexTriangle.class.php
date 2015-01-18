@@ -18,10 +18,11 @@ class calculator_VertexTriangle {
 		$v3 = new at_dotpoint_math_vector_Vector3($this->p3->coordinate->get_x(), $this->p3->coordinate->get_y(), 0, null);
 		$sub1 = at_dotpoint_math_vector_Vector3::subtract($v2, $v1, new at_dotpoint_math_vector_Vector3(null, null, null, null));
 		$sub2 = at_dotpoint_math_vector_Vector3::subtract($v3, $v1, new at_dotpoint_math_vector_Vector3(null, null, null, null));
+		$cross = at_dotpoint_math_vector_Vector3::cross($sub1, $sub2, null);
 		if($includeZero) {
-			return at_dotpoint_math_vector_Vector3::cross($sub1, $sub2, null)->z >= 0;
+			return $cross->get_z() >= 0;
 		} else {
-			return at_dotpoint_math_vector_Vector3::cross($sub1, $sub2, null)->z > 0;
+			return $cross->get_z() > 0;
 		}
 	}}
 	public function __call($m, $a) {

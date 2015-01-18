@@ -77,6 +77,7 @@ class calculator_EdgeContainer {
 	}
 	public function insertSplit($start, $a, $b) {
 		$split = new calculator_Vertex(null);
+		$split->index = Math::min($a->index, $b->index) + Math::min(1, Math::abs($b->index - $a->index)) * 0.5;
 		if($this->isVertical($a, $b)) {
 			$split->set_x($a->get_x());
 			$split->set_y($start->get_y());
@@ -88,14 +89,14 @@ class calculator_EdgeContainer {
 		$this->insert($split, $start);
 		$this->insert($split, $a);
 		$this->insert($split, $b);
-		$a->neighbors->remove($b);
-		$b->neighbors->remove($a);
-		$a->neighbors->add($split);
-		$b->neighbors->add($split);
-		$split->neighbors->add($start);
-		$split->neighbors->add($a);
-		$split->neighbors->add($b);
-		$start->neighbors->add($split);
+		$a->removeNeighbor($b);
+		$b->removeNeighbor($a);
+		$a->insertNeighbor($split);
+		$b->insertNeighbor($split);
+		$split->insertNeighbor($start);
+		$split->insertNeighbor($a);
+		$split->insertNeighbor($b);
+		$start->insertNeighbor($split);
 		return $split;
 	}
 	public function getIndex($value, $isVertical) {

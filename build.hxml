@@ -26,7 +26,7 @@
 -js bin/js/Partitioning.js
 
 ## ################################
-## AS3
+## AS3 SWF
 
 --next
 
@@ -40,5 +40,20 @@
 
 -D display
 
+-swf-header 1024:768:40
 -swf-version 11
 -swf bin/as3/Partitioning.swf
+
+## ################################
+## AS3 Source-Code with Display
+
+--next
+
+-main Main
+
+-cp src
+-cp lib/dotCore/src
+
+-D display
+
+-as3 bin/as3/src

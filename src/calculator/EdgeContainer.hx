@@ -171,7 +171,8 @@ class EdgeContainer
 	private function insertSplit( start:Vertex, a:Vertex, b:Vertex ):Vertex
 	{		
 		var split:Vertex = new Vertex( null );	
-		
+			split.index = Math.min( a.index, b.index ) + Math.min( 1, Math.abs(b.index - a.index) ) * 0.5;
+			
 		if( this.isVertical( a, b ) )  // vertical edge, horizontal ray that splits the edge
 		{			
 			split.x = a.x;
@@ -181,11 +182,10 @@ class EdgeContainer
 		{
 			split.x = start.x;
 			split.y = a.y;
-		}
+		}	
 		
 		#if debug
-			var index:Float = Math.min( a.index, b.index ) + Math.min( 1, Math.abs(b.index - a.index) ) * 0.5;
-			trace( "split", start, "--X--", a, b + ": [" + index + "]" );
+			trace( "split", start, "--X--", a, b + ": [" + split.index + "]" );
 		#end
 		
 		// ------------------- //
@@ -200,17 +200,17 @@ class EdgeContainer
 		// ------------------- //
 		// adjust graph:
 		
-		a.neighbors.remove( b );
-		b.neighbors.remove( a );
+		a.removeNeighbor( b );
+		b.removeNeighbor( a );
 		
-		a.neighbors.add( split );
-		b.neighbors.add( split );
+		a.insertNeighbor( split );
+		b.insertNeighbor( split );
 		
-		split.neighbors.add( start );
-		split.neighbors.add( a );
-		split.neighbors.add( b );
+		split.insertNeighbor( start );
+		split.insertNeighbor( a );
+		split.insertNeighbor( b );
 		
-		start.neighbors.add( split );
+		start.insertNeighbor( split );
 		
 		// ------------------- //
 		

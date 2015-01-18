@@ -120,7 +120,7 @@ class at_dotpoint_math_geom_Rectangle {
 		return $value;
 	}
 	public function get_topLeft() {
-		return $this->position->hclone();
+		return $this->position->hclone(null);
 	}
 	public function set_topLeft($value) {
 		{
@@ -184,10 +184,10 @@ class at_dotpoint_math_geom_Rectangle {
 		return $value;
 	}
 	public function get_dimension() {
-		return $this->size->hclone();
+		return $this->size->hclone(null);
 	}
 	public function set_dimension($value) {
-		$this->size->copyFrom($value);
+		$this->size->set($value->get_x(), $value->get_y());
 		return $value;
 	}
 	public function isInside($x, $y) {

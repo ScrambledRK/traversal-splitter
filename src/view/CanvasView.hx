@@ -1,11 +1,10 @@
 package view;
 
-import at.dotpoint.display.components.renderable.FillStyle;
-import at.dotpoint.display.Shape;
-import at.dotpoint.display.Sprite;
-import at.dotpoint.display.TextField;
 import at.dotpoint.math.geom.Rectangle;
 import at.dotpoint.math.vector.IVector2;
+import flash.display.Shape;
+import flash.display.Sprite;
+import flash.text.TextField;
 
 /**
  * ...
@@ -39,7 +38,7 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	// ------------------- //
 	
 	/**
-	 * 
+	 * polygon canvas (where debug gets drawn onto)
 	 */
 	private var canvas:Sprite;
 
@@ -72,15 +71,16 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	public function drawOutline( list:Array<IVector2> ):Void
 	{
 		var shape:Shape = new Shape();
-		
+			shape.graphics.lineStyle( 8, Std.int( 0xFFFFFF * Math.random() ), 0.35 );
+			
 		for( v in 0...list.length + 1 )
 		{
 			var vertex:IVector2 = list[v % list.length];			
 			
 			if( v == 0 )
-				shape.graphic.moveTo( vertex.x, vertex.y );
+				shape.graphics.moveTo( vertex.x, vertex.y );
 			else
-				shape.graphic.lineTo( vertex.x, vertex.y );
+				shape.graphics.lineTo( vertex.x, vertex.y );
 			
 			// ---------- //	
 			
@@ -91,8 +91,6 @@ class CanvasView extends Sprite implements IPartitionDebugger
 			
 			this.canvas.addChild( debug );			
 		}
-		
-		shape.graphic.drawStrokes( 8, Std.int( 0xFFFFFF * Math.random() ), 0.35 );
 		
 		this.canvas.addChild( shape );
 		
@@ -115,9 +113,10 @@ class CanvasView extends Sprite implements IPartitionDebugger
 		var color:Int = Std.int( 0xFFFFFF * Math.random() );
 		
 		var shape:Shape = new Shape();
-			shape.graphic.createRectangle( area.x, area.y, area.width, area.height );
-			shape.graphic.drawStrokes( 1, color );		
-			shape.graphic.drawFill( FillStyle.createSolid( color, 0.1 ) );	
+			shape.graphics.lineStyle( 1, color );
+			shape.graphics.beginFill( color, 0.1 );
+			shape.graphics.drawRect( area.x, area.y, area.width, area.height );
+			shape.graphics.endFill();
 		
 		this.canvas.addChild( shape );
 		
@@ -139,10 +138,9 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	public function drawSplitLine( a:IVector2, b:IVector2 ):Void
 	{
 		var shape:Shape = new Shape();
-			shape.graphic.moveTo( a.x, a.y );
-			shape.graphic.lineTo( b.x, b.y );
-		
-		shape.graphic.drawStrokes( 4, 0x000000, 0.65 );
+			shape.graphics.lineStyle( 4, 0x000000, 0.65 );
+			shape.graphics.moveTo( a.x, a.y );
+			shape.graphics.lineTo( b.x, b.y );
 		
 		this.canvas.addChild( shape );
 	}
@@ -154,9 +152,8 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	public function drawSplitStart( a:IVector2 ):Void
 	{
 		var shape:Shape = new Shape();
-			shape.graphic.createCircle( a.x, a.y, 4 );
-			
-		shape.graphic.drawStrokes( 2, 0xFF0000, 0.85 );
+			shape.graphics.lineStyle( 2, 0xFF0000, 0.85 );
+			shape.graphics.drawCircle( a.x, a.y, 4 );
 		
 		this.canvas.addChild( shape );
 	}
@@ -168,9 +165,8 @@ class CanvasView extends Sprite implements IPartitionDebugger
 	public function drawSplitEnd( a:IVector2 ):Void
 	{
 		var shape:Shape = new Shape();
-			shape.graphic.createCircle( a.x, a.y, 4 );
-			
-		shape.graphic.drawStrokes( 2, 0x000000, 0.85 );
+			shape.graphics.lineStyle( 2, 0x000000, 0.85 );
+			shape.graphics.drawCircle( a.x, a.y, 4 );
 		
 		this.canvas.addChild( shape );
 		

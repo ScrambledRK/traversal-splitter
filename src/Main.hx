@@ -5,14 +5,11 @@ import at.dotpoint.math.vector.Vector2;
 import calculator.TraversalSplitter;
 import converter.StringConverter;
 
+
 #if display
 	import view.CanvasView;
-	import view.ControllerView;
-
-	import at.dotpoint.core.bootstrapper.task.StageTask;
-	import at.dotpoint.core.event.Event;
-	import at.dotpoint.display.event.MouseEvent;
-	import at.dotpoint.display.Stage;
+	import view.ControllerView;	
+	import flash.events.Event;
 #end
 
 /**
@@ -135,6 +132,46 @@ class Main
 	
 	/**
 	 * 
+	 */
+	public function setupController():Void
+	{
+		flash.Lib.current.stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
+		flash.Lib.current.stage.align 	  = flash.display.StageAlign.TOP_LEFT;
+		
+		// ------------ //		
+		
+		this.controller = new ControllerView();
+		this.controller.addEventListener( "calculate", this.onCalculate );		
+		
+		flash.Lib.current.stage.addChild( this.controller );	
+	}
+
+	/**
+	 * 
+	 */
+	private function setupCanvas():Void
+	{
+		if( this.canvas != null )
+		{
+			flash.Lib.current.stage.removeChild( this.canvas );
+			this.canvas = null;
+		}
+		
+		// ------------------------ //
+		
+		this.canvas = new CanvasView();
+		this.canvas.x = 15;
+		this.canvas.y = this.controller.y + this.controller.height;
+		
+		flash.Lib.current.stage.addChild( this.canvas );
+		
+		#if debug
+			this.calculator.debugger = this.canvas;	
+		#end
+	}
+	
+	/**
+	 * 
 	 * @param	value
 	 */
 	private function onCalculate( value:Event ):Void
@@ -156,47 +193,6 @@ class Main
 			}
 		#end
 	}
-	
-	
-	/**
-	 * 
-	 */
-	public function setupController():Void
-	{
-		var task:StageTask = new StageTask(null);
-			task.execute();	
 		
-		// ------------ //		
-		
-		this.controller = new ControllerView();
-		this.controller.addEventListener( MouseEvent.CLICK, this.onCalculate );		
-		
-		Stage.instance.addChild( this.controller );	
-	}
-
-	/**
-	 * 
-	 */
-	private function setupCanvas():Void
-	{
-		if( this.canvas != null )
-		{
-			Stage.instance.removeChild( this.canvas );
-			this.canvas = null;
-		}
-		
-		// ------------------------ //
-		
-		this.canvas = new CanvasView();
-		this.canvas.x = 15;
-		this.canvas.y = 150;
-		
-		Stage.instance.addChild( this.canvas );
-		
-		#if debug
-			this.calculator.debugger = this.canvas;	
-		#end
-	}
-	
 	#end
 }

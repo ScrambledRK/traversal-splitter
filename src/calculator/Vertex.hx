@@ -16,6 +16,13 @@ class Vertex implements IVector2
 	public var coordinate:Vector2;
 	
 	/**
+	 * unique ID of the vertex - calculated by counting through the whole 
+	 * polygon graph clockwise/counterclockwise. new vertices are assigned
+	 * a value between its left and right neighbor. e.g.: 8 --- 8.5 --- 9
+	 */
+	public var index:Float;
+	
+	/**
 	 * X------o------X
 	 *        |
 	 *        |
@@ -24,9 +31,10 @@ class Vertex implements IVector2
 	 * up to 3 neighbors vertices: left, right and when a split-vertex a normal vertex
 	 * linked list to save memory and random access performance is not an issue
 	 */
-	public var neighbors:List<Vertex>;	
+	public var neighbors:Array<Vertex>;	
 	
 	// ----------------- //
+	// IVector2
 	
 	/**
 	 * getter / setter for coordinate
@@ -44,11 +52,11 @@ class Vertex implements IVector2
 			coordinate = new Vector2();
 		
 		this.coordinate = coordinate;				
-		this.neighbors = new List<Vertex>();
+		this.neighbors = new Array<Vertex>();
 	}
 	
 	// ************************************************************************ //
-	// getter / setter
+	// IVector2
 	// ************************************************************************ //	
 	
 	/**
@@ -71,13 +79,60 @@ class Vertex implements IVector2
 		return this.coordinate.y = value;
 	}
 	
+	/**
+	 * this.coordinate.normalize()
+	 */
+	public function normalize():Void
+	{
+		this.coordinate.normalize();
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public function length():Float
+	{
+		return this.coordinate.length();
+	}
+	
+	// ************************************************************************ //
+	// Neighbors
+	// ************************************************************************ //	
+	
+	/**
+	 * 
+	 * @param	vertex
+	 */
+	public function insertNeighbor( vertex:Vertex ):Void
+	{
+		this.neighbors.push( vertex );
+		this.neighbors.sort( this.sortNeighbors );
+	}
+	
+	/**
+	 * 
+	 * @param	vertex
+	 */
+	public function removeNeighbor( vertex:Vertex ):Bool
+	{
+		return this.neighbors.remove( vertex );
+	}
+	
+	/**
+	 * 
+	 * @param	a
+	 * @param	b
+	 * @return
+	 */
+	private function sortNeighbors( a:Vertex, b:Vertex ):Int
+	{
+		return Math.round( a.index - b.index );
+	}
+	
 	// ************************************************************************ //
 	// Debug / toString
 	// ************************************************************************ //	
-	
-	#if debug
-	
-	public var index:Int;
 	
 	/**
 	 * 
@@ -87,6 +142,4 @@ class Vertex implements IVector2
 	{
 		return "[" + this.index + "]";
 	}
-	
-	#end
 }

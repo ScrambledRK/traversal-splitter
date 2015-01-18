@@ -55,6 +55,8 @@ class VertexTriangle
 		var sub1:Vector3 = Vector3.subtract( v2, v1, new Vector3() );
 		var sub2:Vector3 = Vector3.subtract( v3, v1, new Vector3() );
 		
-		return includeZero ? Vector3.cross( sub1, sub2 ).z >= 0 : Vector3.cross( sub1, sub2 ).z > 0; 
+		var cross:Vector3 = Vector3.cross( sub1, sub2 );
+		
+		return includeZero ? cross.z  >= 0 : cross.z > 0; 
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-class at_dotpoint_math_vector_Vector2 implements at_dotpoint_math_vector_IVector2{
+class at_dotpoint_math_vector_Vector2 implements at_dotpoint_core_ICloneable, at_dotpoint_math_vector_IVector2{
 	public function __construct($x = null, $y = null) {
 		if(!php_Boot::$skip_constructor) {
 		if($y === null) {
@@ -14,8 +14,15 @@ class at_dotpoint_math_vector_Vector2 implements at_dotpoint_math_vector_IVector
 	}}
 	public $x;
 	public $y;
-	public function hclone() {
-		return new at_dotpoint_math_vector_Vector2($this->get_x(), $this->get_y());
+	public function hclone($output = null) {
+		if($output !== null) {
+			$output = $output;
+		} else {
+			$output = new at_dotpoint_math_vector_Vector2(null, null);
+		}
+		$output->set_x($this->get_x());
+		$output->set_y($this->get_y());
+		return $output;
 	}
 	public function get_x() {
 		return $this->x;
@@ -33,10 +40,6 @@ class at_dotpoint_math_vector_Vector2 implements at_dotpoint_math_vector_IVector
 		$this->set_x($x);
 		$this->set_y($y);
 	}
-	public function copyFrom($vector) {
-		$this->set_x($vector->get_x());
-		$this->set_y($vector->get_y());
-	}
 	public function normalize() {
 		$k = 1. / $this->length();
 		{
@@ -49,10 +52,44 @@ class at_dotpoint_math_vector_Vector2 implements at_dotpoint_math_vector_IVector
 		}
 	}
 	public function length() {
-		return Math::sqrt($this->lengthSq());
+		return Math::sqrt($this->get_x() * $this->get_x() + $this->get_y() * $this->get_y());
 	}
 	public function lengthSq() {
 		return $this->get_x() * $this->get_x() + $this->get_y() * $this->get_y();
+	}
+	public function toArray($output = null) {
+		if($output !== null) {
+			$output = new _hx_array(array());
+		}
+		$output[0] = $this->get_x();
+		$output[1] = $this->get_y();
+		return $output;
+	}
+	public function getIndex($index) {
+		switch($index) {
+		case 0:{
+			return $this->get_x();
+		}break;
+		case 1:{
+			return $this->get_y();
+		}break;
+		default:{
+			throw new HException("out of bounds");
+		}break;
+		}
+	}
+	public function setIndex($index, $value) {
+		switch($index) {
+		case 0:{
+			$this->set_x($value);
+		}break;
+		case 1:{
+			$this->set_y($value);
+		}break;
+		default:{
+			throw new HException("out of bounds");
+		}break;
+		}
 	}
 	public function toString() {
 		return "[Vector2;" . _hx_string_rec($this->get_x(), "") . ", " . _hx_string_rec($this->get_y(), "") . "]";

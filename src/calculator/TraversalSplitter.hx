@@ -195,8 +195,8 @@ class TraversalSplitter implements IPartitionCalculator
 		{
 			var triangle:VertexTriangle = this.getTriangle( v, true );		
 			
-			triangle.p2.neighbors.add( triangle.p1 ); 		// clockwise previous neighbor
-			triangle.p2.neighbors.add( triangle.p3 ); 		// clockwise next neighbor			
+			triangle.p2.insertNeighbor( triangle.p1 ); 		// clockwise previous neighbor
+			triangle.p2.insertNeighbor( triangle.p3 ); 		// clockwise next neighbor			
 			
 			this.edges.insert( triangle.p1, triangle.p2 );	// line between previous and current vertex
 		}
@@ -312,7 +312,7 @@ class TraversalSplitter implements IPartitionCalculator
 		if( previous == null )
 		{
 			iterator = current.neighbors.iterator();
-			previous = current.neighbors.first();		
+			previous = current.neighbors[0];		
 		}
 		
 		while( previous != null )
@@ -418,7 +418,7 @@ class TraversalSplitter implements IPartitionCalculator
 	 */
 	private function getNormal( current:Vertex ):Vector2
 	{
-		var previous:Vertex = current.neighbors.first();
+		var previous:Vertex = current.neighbors[0];
 		
 		var delta:Vector3 = new Vector3();
 			delta.x = current.x - previous.x;

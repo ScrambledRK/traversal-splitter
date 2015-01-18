@@ -69,8 +69,8 @@ class calculator_TraversalSplitter implements IPartitionCalculator{
 			while($_g1 < $_g) {
 				$v = $_g1++;
 				$triangle = $this->getTriangle($v, true);
-				$triangle->p2->neighbors->add($triangle->p1);
-				$triangle->p2->neighbors->add($triangle->p3);
+				$triangle->p2->insertNeighbor($triangle->p1);
+				$triangle->p2->insertNeighbor($triangle->p3);
 				$this->edges->insert($triangle->p1, $triangle->p2);
 				unset($v,$triangle);
 			}
@@ -126,7 +126,7 @@ class calculator_TraversalSplitter implements IPartitionCalculator{
 		$possible = null;
 		if($previous === null) {
 			$iterator = $current->neighbors->iterator();
-			$previous = $current->neighbors->first();
+			$previous = $current->neighbors[0];
 		}
 		while($previous !== null) {
 			if(null == $current->neighbors) throw new HException('null iterable');
@@ -170,7 +170,7 @@ class calculator_TraversalSplitter implements IPartitionCalculator{
 				if($area === $partition) {
 					continue;
 				}
-				if(at_dotpoint_math_vector_Vector2::isEqual($partition->position->hclone(), $area->position->hclone()) && at_dotpoint_math_vector_Vector2::isEqual(at_dotpoint_math_vector_Vector2::add($partition->position, $partition->size, null), at_dotpoint_math_vector_Vector2::add($area->position, $area->size, null))) {
+				if(at_dotpoint_math_vector_Vector2::isEqual($partition->position->hclone(null), $area->position->hclone(null)) && at_dotpoint_math_vector_Vector2::isEqual(at_dotpoint_math_vector_Vector2::add($partition->position, $partition->size, null), at_dotpoint_math_vector_Vector2::add($area->position, $area->size, null))) {
 					return false;
 				}
 				unset($area);
@@ -197,7 +197,7 @@ class calculator_TraversalSplitter implements IPartitionCalculator{
 		return $triangle;
 	}
 	public function getNormal($current) {
-		$previous = $current->neighbors->first();
+		$previous = $current->neighbors[0];
 		$delta = new at_dotpoint_math_vector_Vector3(null, null, null, null);
 		$delta->set_x($current->get_x() - $previous->get_x());
 		$delta->set_y($current->get_y() - $previous->get_y());
