@@ -9,3 +9,11 @@ A more detailed description about the algorithm can be found on my [blog](http:/
 1. traverse the polygon clockwise and find vertices with counterclockwise rotation
 2. split the graph from those vertices to any direction
 3. pick a vertex and traverse the adjusted graph clockwise to build your rectangle
+---
+runtime:
+* multiple platform targets supported
+* simple input / output interface
+
+development time:
+* confusing line detection algorithm
+* monster class
