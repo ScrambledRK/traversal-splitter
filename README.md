@@ -14,6 +14,6 @@ runtime:
 * multiple platform targets supported
 * simple input / output interface
 
-development time:
+development-time:
 * confusing line detection algorithm
 * monster class
