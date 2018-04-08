@@ -15,5 +15,5 @@ runtime:
 * simple input / output interface
 
 development-time:
-* confusing line detection algorithm
+* confusing line intersection algorithm
 * monster class
